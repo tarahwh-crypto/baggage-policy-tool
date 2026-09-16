@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>行李政策承運人判定</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;650&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f6f4;
+    --panel:#ffffff;
+    --ink:#1c2430;
+    --ink-dim:#5b6472;
+    --line:#d8dce1;
+    --line-soft:#e8eaed;
+    --accent:#1d4f8f;
+    --accent-ink:#ffffff;
+    --accent-soft:#e7edf6;
+    --warn:#a8631a;
+    --warn-soft:#fbf0df;
+    --warn-line:#e3c393;
+    --good:#28734f;
+    --good-soft:#e5f2ea;
+    --bad:#a3372f;
+    --bad-soft:#fbeae8;
+    --mono-bg:#eef1f4;
+    --focus:#1d4f8f;
+    --shadow: 0 1px 2px rgba(28,36,48,.06), 0 8px 24px -12px rgba(28,36,48,.18);
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --paper:#12161c;
+      --panel:#1a2029;
+      --ink:#e7eaee;
+      --ink-dim:#98a1ad;
+      --line:#2b3340;
+      --line-soft:#232a35;
+      --accent:#6f9ad6;
+      --accent-ink:#0d1117;
+      --accent-soft:#1c2b3f;
+      --warn:#e0a855;
+      --warn-soft:#2e2716;
+      --warn-line:#4a3c1f;
+      --good:#7cc9a0;
+      --good-soft:#16281f;
+      --bad:#e28b83;
+      --bad-soft:#2e1a18;
+      --mono-bg:#20262f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12161c;
+    --panel:#1a2029;
+    --ink:#e7eaee;
+    --ink-dim:#98a1ad;
+    --line:#2b3340;
+    --line-soft:#232a35;
+    --accent:#6f9ad6;
+    --accent-ink:#0d1117;
+    --accent-soft:#1c2b3f;
+    --warn:#e0a855;
+    --warn-soft:#2e2716;
+    --warn-line:#4a3c1f;
+    --good:#7cc9a0;
+    --good-soft:#16281f;
+    --bad:#e28b83;
+    --bad-soft:#2e1a18;
+    --mono-bg:#20262f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+
+  @font-face{ /* fallback safety, Plex loads via Google Fonts link below */ }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans","Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+    padding-inline:20px;
+    padding-block:28px 60px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px;margin:0 auto;}
+  .mono{font-family:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;}
+
+  header.page{margin-bottom:22px;}
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:10px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  h1{
+    font-size:26px;
+    font-weight:650;
+    letter-spacing:-.01em;
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  .sub{color:var(--ink-dim);font-size:14.5px;max-width:62ch;}
+
+  .banner{
+    display:flex;gap:10px;
+    background:var(--warn-soft);
+    border:1px solid var(--warn-line);
+    color:var(--warn);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:13.5px;
+    margin:18px 0 26px;
+    line-height:1.55;
+  }
+  .banner b{color:inherit;}
+  .banner svg{flex:none;margin-top:2px;}
+
+  section.step{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:20px 20px 22px;
+    margin-bottom:18px;
+  }
+  .step-head{
+    display:flex;align-items:baseline;gap:10px;
+    margin-bottom:4px;
+  }
+  .step-num{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;font-weight:600;
+    color:var(--accent-ink);
+    background:var(--accent);
+    width:22px;height:22px;border-radius:6px;
+    display:inline-flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .step-title{font-size:16.5px;font-weight:650;}
+  .step-desc{color:var(--ink-dim);font-size:13.5px;margin:2px 0 16px;}
+
+  table.seg{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.seg th{
+    text-align:left;font-weight:600;color:var(--ink-dim);
+    font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;
+    padding:0 8px 8px;border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.seg td{padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+  table.seg tr:last-child td{border-bottom:none;}
+  .tbl-scroll{overflow-x:auto;margin:0 -2px;padding:0 2px;}
+  input.cell, select.cell{
+    width:100%;min-width:64px;
+    font:inherit;font-size:13.5px;
+    font-family:"IBM Plex Mono",monospace;
+    background:var(--mono-bg);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 7px;
+    color:var(--ink);
+  }
+  input.cell:focus, select.cell:focus{outline:2px solid var(--focus);outline-offset:1px;}
+  .col-route{width:15%;}
+  .col-carrier{width:13%;}
+  .col-op{width:13%;}
+  .col-date{width:14%;}
+  .col-brk{width:64px;text-align:center;font-size:10.5px;line-height:1.3;}
+  .col-del{width:34px;text-align:center;}
+  input.cell-chk{width:16px;height:16px;cursor:pointer;}
+  td.cell-chk-cell{text-align:center;}
+
+  .seg-result-head{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+    margin:18px 0 10px;padding-top:14px;border-top:1px solid var(--line-soft);
+  }
+  .seg-result-title{font-size:13.5px;font-weight:650;}
+  .seg-result-sub{font-size:12px;color:var(--ink-dim);margin-top:2px;max-width:520px;}
+  .seg-lock-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .seg-lock-hint{font-size:12px;color:var(--ink-dim);}
+  input.cell:disabled, input.cell-chk:disabled{
+    background:var(--mono-bg);color:var(--ink-dim);cursor:not-allowed;opacity:0.75;
+  }
+  input.cell.incomplete{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad);}
+  button:disabled{opacity:0.4;cursor:not-allowed;}
+  button:disabled:hover{border-color:var(--line);color:var(--ink);}
+  .journey-head{
+    font-size:12.5px;font-weight:650;color:var(--ink-dim);
+    margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--line-soft);
+  }
+  .journey-head:first-child{margin-top:0;padding-top:0;border-top:none;}
+  .trace-journey-head{
+    font-size:12.5px;font-weight:650;color:var(--ink-dim);
+    margin:14px 0 8px;
+  }
+  .trace-journey-head:first-child{margin-top:0;}
+
+  .ocr-box{
+    border:1px dashed var(--accent);border-radius:10px;
+    background:var(--accent-soft);padding:14px 16px;margin-bottom:16px;
+  }
+  .ocr-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;}
+  summary.ocr-summary{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    cursor:pointer;list-style:none;
+  }
+  summary.ocr-summary::-webkit-details-marker{display:none;}
+  summary.ocr-summary::before{content:"▸";font-size:11px;color:var(--accent);}
+  details[open] > summary.ocr-summary::before{content:"▾";}
+  .ocr-body{margin-top:10px;}
+  .ocr-title{font-weight:650;font-size:13.5px;}
+  .ocr-desc{font-size:12.5px;color:var(--ink-dim);margin:0 0 10px;}
+  .ocr-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .ocr-row input[type=file]{
+    font-size:12.5px;color:var(--ink);max-width:100%;
+  }
+  .ocr-status{font-size:12.5px;color:var(--ink-dim);margin-top:8px;min-height:1em;}
+  .ocr-status.err{color:var(--bad);}
+  .ocr-status.ok{color:var(--good);}
+  .parse-textarea{
+    width:100%;resize:vertical;
+    font:inherit;font-size:13px;
+    font-family:"IBM Plex Mono",monospace;
+    background:var(--mono-bg);border:1px solid var(--line);border-radius:8px;
+    padding:9px 10px;color:var(--ink);margin-bottom:10px;
+  }
+  .parse-textarea:focus{outline:2px solid var(--focus);outline-offset:1px;}
+
+  .row-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  button{
+    font:inherit;font-size:13px;font-weight:600;
+    border-radius:8px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);
+    padding:8px 13px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  button:hover{border-color:var(--accent);color:var(--accent);}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+  button.primary:hover{filter:brightness(1.06);color:var(--accent-ink);}
+  button.ghost{border-color:transparent;background:transparent;padding:8px 6px;}
+  button.icon-del{
+    border:none;background:transparent;color:var(--ink-dim);
+    padding:4px;border-radius:6px;width:26px;height:26px;justify-content:center;
+  }
+  button.icon-del:hover{background:var(--bad-soft);color:var(--bad);}
+
+  /* Step 2 — determination trace */
+  .trace{display:flex;flex-direction:column;gap:0;margin-top:4px;}
+  .trace-item{
+    display:grid;grid-template-columns:22px 1fr;gap:12px;
+    position:relative;padding-bottom:18px;
+  }
+  .trace-item:last-child{padding-bottom:0;}
+  .trace-line{
+    position:relative;display:flex;flex-direction:column;align-items:center;
+  }
+  .trace-dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--accent);margin-top:4px;flex:none;
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .trace-item:not(:last-child) .trace-line::after{
+    content:"";flex:1;width:1.5px;background:var(--line);margin-top:4px;
+  }
+  .trace-label{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-dim);font-weight:600;margin-bottom:3px;}
+  .trace-body{font-size:14px;}
+  .trace-body b{font-weight:650;}
+  .trace-body .cite{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);
+    background:var(--accent-soft);padding:1px 6px;border-radius:5px;
+  }
+
+  .result-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;
+  }
+  .result-card{
+    border-radius:12px;padding:16px 18px;
+    background:var(--good-soft);border:1px solid var(--good);
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .result-card.unconfirmed{background:var(--warn-soft);border-color:var(--warn);}
+  .result-carrier{font-size:13px;color:var(--ink-dim);font-weight:600;}
+  .result-carrier .code{
+    font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:26px;
+    color:var(--good);letter-spacing:.02em;display:block;margin-top:4px;
+  }
+  .result-card.unconfirmed .result-carrier .code{color:var(--warn);}
+  .result-note{font-size:12.5px;color:var(--ink-dim);}
+  .result-links{display:flex;flex-direction:column;gap:3px;margin-top:2px;}
+  .result-links a.ref-link{margin-top:0;}
+  .diverge-note{
+    margin-top:10px;font-size:12.5px;color:var(--bad);
+    background:var(--bad-soft);border:1px solid var(--bad);
+    border-radius:8px;padding:9px 12px;
+  }
+  @media (max-width:560px){
+    .result-grid{grid-template-columns:1fr;}
+  }
+
+  .badge{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:650;letter-spacing:.02em;
+    padding:2px 8px;border-radius:999px;
+    font-family:"IBM Plex Mono",monospace;
+  }
+  .badge.confirmed{background:var(--good-soft);color:var(--good);}
+  .badge.unconfirmed{background:var(--warn-soft);color:var(--warn);}
+
+  a.ref-link{display:inline-block;margin-top:4px;font-size:12.5px;color:var(--accent,#2563eb);text-decoration:none;font-weight:600;}
+  a.ref-link:hover{text-decoration:underline;}
+
+  .rule-shot{margin-top:8px;}
+  .rule-shot img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;display:block;background:#fff;cursor:zoom-in;}
+  .rule-shot-cap{font-size:11px;color:var(--ink-dim);margin-top:4px;}
+
+  .lightbox{
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(20,24,30,.86);
+    display:flex;align-items:center;justify-content:center;
+    padding:32px;cursor:zoom-out;
+  }
+  .lightbox[hidden]{display:none;}
+  .lightbox img{
+    max-width:100%;max-height:100%;
+    border-radius:8px;background:#fff;
+    box-shadow:0 12px 40px rgba(0,0,0,.4);
+    cursor:default;
+  }
+  .lightbox-close{
+    position:fixed;top:18px;right:22px;
+    width:40px;height:40px;border-radius:999px;border:none;
+    background:rgba(255,255,255,.92);color:var(--ink);
+    font-size:18px;line-height:1;cursor:pointer;
+  }
+  .lightbox-close:hover{background:#fff;}
+
+  table.rules{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.rules th{
+    text-align:left;font-weight:600;color:var(--ink-dim);
+    font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;
+    padding:0 8px 8px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  table.rules td{padding:8px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  table.rules tr:last-child td{border-bottom:none;}
+  .col-code{width:80px;}
+  .col-mode{width:180px;}
+  textarea.note{
+    width:100%;min-height:38px;resize:vertical;
+    font:inherit;font-size:12.5px;
+    background:var(--mono-bg);border:1px solid var(--line);border-radius:6px;
+    padding:6px 7px;color:var(--ink);
+  }
+
+  details.adv{margin-top:14px;}
+  details.adv summary{
+    cursor:pointer;font-size:12.5px;color:var(--ink-dim);font-weight:600;
+    list-style:none;display:flex;align-items:center;gap:6px;
+  }
+  details.adv summary::-webkit-details-marker{display:none;}
+  details.adv summary::before{content:"▸";font-size:10px;color:var(--accent);}
+  details.adv[open] summary::before{content:"▾";}
+  .adv-body{margin-top:10px;font-size:12.5px;color:var(--ink-dim);}
+  .adv-body code{font-family:"IBM Plex Mono",monospace;background:var(--mono-bg);padding:1px 5px;border-radius:4px;}
+
+  footer.refs{
+    margin-top:26px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--ink-dim);
+  }
+  footer.refs ul{margin:6px 0 0;padding-left:18px;}
+  footer.refs li{margin-bottom:3px;}
+  footer.refs a{color:var(--accent);}
+
+  @media (max-width:520px){
+    h1{font-size:22px;}
+    section.step{padding:16px 14px 18px;}
+    .result-note{text-align:left;max-width:100%;}
+  }
+</style>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;650;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+
+<div class="wrap">
+  <header class="page">
+    <div class="eyebrow"><span class="dot"></span>AOD · 行李政策承運人判定（原型）</div>
+    <h1>誰的行李政策適用這張票？</h1>
+    <p class="sub">輸入旅客實際開票行程，工具依 DOT FMC 原則與 IATA MSC 判定邏輯，逐步推算應適用哪一家航空公司的免費行李額度與超額費率。</p>
+  </header>
+
+  <div class="banner">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 9v4m0 4h.01M10.29 3.86l-8.18 14.18A2 2 0 0 0 3.9 21h16.2a2 2 0 0 0 1.79-2.96L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><b>原型工具。</b> 已依《聯航作業說明 Interline Service Instruction》（更新 2026/07/14）登錄 AS／AA／EY 三家規則，並比對文件內附範例逐一驗證。「免費託運行李額度」與「超額行李費率」可能適用不同承運人、且涉美加／未涉美加可能各自不同（例如 EY：未涉美加時額度走 MSC、費率走第一家實際承運人），工具已分開判定。其餘航空公司暫以 DOT 預設 FMC／IATA 預設 MSC 原則處理，畫面會標示「待確認」。正式報價收費前，仍請以文件正本及 SOP-AOD-26-002 為準。</div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section class="step">
+    <div class="step-head"><span class="step-num">1</span><span class="step-title">輸入開票行程</span></div>
+    <p class="step-desc">依「原始開票行程」順序輸入每一航段。行銷承運人（Marketing）請填實際開票所顯示的代碼；若該航段為 codeshare 由其他公司實際飛航，請填「實際承運人 Operating」，留空表示與行銷承運人相同。</p>
+
+    <div class="ocr-box parse-box">
+      <details>
+        <summary class="ocr-summary">
+          <span class="ocr-title">方式 A：貼上行程文字（規則比對，不需 AI，離線可用）</span>
+          <span class="badge confirmed">建議優先使用</span>
+        </summary>
+        <div class="ocr-body">
+          <p class="ocr-desc">從訂位／CM 系統畫面選取整段行程文字複製、貼到下方，工具會自動判斷並拆解成航段帶入表格，支援兩種格式：①簡化格式，每行一段（出發＋到達），如 <span class="mono">1 TPE SEA X AS 7210 JX O 28SEP</span>；②訂位系統逐點格式，每行僅一個地點（前面帶 O=停留／X=轉機），最後單獨一行列出最終到達地，如 <span class="mono">1 OOKA EY5182JX Q 15SEP1550 OK ...</span>。第②種格式中若某地點標示 O（實際停留，非純轉機），行程會自動從該處分成不同段，去程／回程分開判定。此方式最準確，且不論放在 claude.ai 或 GitHub Pages 都能用。</p>
+          <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，支援兩種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA"></textarea>
+          <div class="ocr-row">
+            <button id="parseGo" class="primary">解析文字並帶入</button>
+          </div>
+          <div class="ocr-status" id="parseStatus"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="ocr-box parse-box">
+      <details>
+        <summary class="ocr-summary">
+          <span class="ocr-title">方式 B：上傳截圖，用 OCR 抽出文字（傳統文字辨識，不需 AI）</span>
+          <span class="badge unconfirmed">誤判率高，僅在真的無法複製文字時才用</span>
+        </summary>
+        <div class="ocr-body">
+          <p class="ocr-desc">此方式為免費、非 AI 的傳統文字辨識（Tesseract.js），實測對航空代碼／航班號／日期這類「字母數字混排」的內容誤判率偏高（例如 O/0、I/1/9、S/5 容易互相認錯），即使截圖清晰也常出錯，這是此類引擎的先天限制，並非圖片品質問題。因此<b>能複製到文字時請一律用方式 A</b>；方式 B 僅建議在完全拿不到可複製文字（例如只有一張照片）時，用來抓出「大致」文字再手動修正——辨識完會自動嘗試判定，但務必逐字核對承運人代碼與日期是否正確再送出。</p>
+          <div class="ocr-row">
+            <input type="file" id="ocrLiteFile" accept="image/*">
+            <button id="ocrLiteGo">OCR 抽字（免 AI）</button>
+          </div>
+          <div class="ocr-status" id="ocrLiteStatus"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="ocr-box" id="ocrBox" hidden>
+      <details>
+        <summary class="ocr-summary">
+          <span class="ocr-title">方式 C：AI 辨識截圖（僅限 claude.ai 內開啟時可用）</span>
+          <span class="badge unconfirmed">AI 辨識，請核對</span>
+        </summary>
+        <div class="ocr-body">
+          <p class="ocr-desc">由 Claude 直接讀取截圖內容判讀行程，準確度較高，但僅在 claude.ai 開啟此頁面時才會出現這個區塊（GitHub Pages 版本會自動隱藏）。仍請逐欄核對再使用，AI 判讀可能誤判相近字母數字（如 0/O、1/I、B/8）。</p>
+          <div class="ocr-row">
+            <input type="file" id="ocrFile" accept="image/*" multiple>
+            <button id="ocrGo" class="primary">辨識並帶入行程</button>
+          </div>
+          <div class="ocr-status" id="ocrStatus"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="seg-result-head">
+      <div>
+        <div class="seg-result-title">帶入結果（航段表）</div>
+        <div class="seg-result-sub">不論用上面哪種方式帶入，或手動輸入，結果都會顯示在下方。用「方式 A／B」貼上文字解析帶入後，欄位會自動反灰鎖定；有紅框表示該欄未填，請點「編輯航段」解鎖後修正或手動輸入。</div>
+      </div>
+      <div class="seg-lock-controls">
+        <button id="toggleEditSeg" class="ghost">✎ 編輯航段</button>
+        <span class="seg-lock-hint" id="segLockHint"></span>
+      </div>
+    </div>
+
+    <div class="tbl-scroll">
+    <table class="seg" id="segTable">
+      <thead>
+        <tr>
+          <th class="col-route">出發地</th>
+          <th class="col-route">目的地</th>
+          <th class="col-carrier">行銷 Mkt</th>
+          <th class="col-op">實際 Op（選填）</th>
+          <th>航班（選填）</th>
+          <th class="col-date">日期（選填）</th>
+          <th class="col-brk">到達地停留<br>（斷點）</th>
+          <th class="col-del"></th>
+        </tr>
+      </thead>
+      <tbody id="segBody"></tbody>
+    </table>
+    </div>
+    <p class="step-desc" style="margin-top:8px;font-size:12px;">「到達地停留（斷點）」：若此航段到達地為實際停留點（非單純轉機），行程會從此處分成不同「段」，免費行李額度／超額行李費率將分段各自判定（例如去程與回程分開判定）。用「方式 A」貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際有停留過夜的到達地。</p>
+
+    <div class="row-actions">
+      <button id="addRow">＋ 新增航段</button>
+      <button id="clearRows" class="ghost">清空</button>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step">
+    <div class="step-head"><span class="step-num">2</span><span class="step-title">判定結果</span></div>
+    <div id="resultsContainer"></div>
+
+    <details class="adv">
+      <summary>顯示判定依據（逐段計算過程）</summary>
+      <div class="adv-body">
+        <p class="step-desc" style="margin-top:0;">工具自動判定：行程是否涉及美國／加拿大點、第一行銷承運人（FMC）、該承運人在「涉美加」與「未涉美加」情境下各自的規則（自家政策／MSC／第一家實際承運人），以及需要時的逐段地理判定過程。若行程因停留點分成多段，各段分別列出判定過程。</p>
+        <div id="traceContainer"></div>
+      </div>
+    </details>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step">
+    <div class="step-head"><span class="step-num">3</span><span class="step-title">航空公司例外規則表</span></div>
+
+    <details class="adv">
+      <summary>顯示 / 編輯規則表（一般作業不需開啟）</summary>
+      <div class="adv-body">
+        <p class="step-desc" style="margin-top:0;">當某航空公司擔任 FMC 時，「免費託運行李額度」與「超額行李費率」各自的判定方式，涉美加行程與未涉美加行程可分別設定（自家政策 FMC／改採 MSC－取行銷承運人／改採 MSC－取實際承運人／第一家實際承運人／其他）。依據：《聯航作業說明 Interline Service Instruction》（更新日 2026/07/14）Baggage Information for Codeshare 分頁。<b>此表僅供查閱，如需新增或修改規則請洽 AOD 管理單位。</b></p>
+
+        <div class="tbl-scroll">
+        <table class="rules" id="rulesTable">
+          <thead>
+            <tr>
+              <th class="col-code">代碼</th>
+              <th class="col-mode">額度・涉美加</th>
+              <th class="col-mode">費率・涉美加</th>
+              <th class="col-mode">額度・未涉美加</th>
+              <th class="col-mode">費率・未涉美加</th>
+              <th>備註 / 依據</th>
+              <th class="col-code">狀態</th>
+            </tr>
+          </thead>
+          <tbody id="rulesBody"></tbody>
+        </table>
+        </div>
+
+        <details class="adv">
+          <summary>進階：地區 / 分區對照（供 MSC 跨區判定使用）</summary>
+          <div class="adv-body">
+            機場地區分類採 IATA 三大區（Area 1 美洲／Area 2 歐非中東／Area 3 亞太）及其下分區。內建約 130 個常用機場，若查無代碼，判定過程會標示「未收錄」，請在下方手動指定該機場所屬 Area／分區後重新計算。中國／港澳／台灣／蒙古併為「東北亞」分區，與官方 IATA 細分或有出入，屬簡化假設，正式作業請以 SOP 對照表為準。
+            <div id="unknownAirports" style="margin-top:8px;"></div>
+          </div>
+        </details>
+      </div>
+    </details>
+  </section>
+
+  <footer class="refs">
+    參考依據：
+    <ul>
+      <li>《聯航作業說明 Interline Service Instruction》（更新 2026/07/14）「Baggage Information for Codeshare Flight」分頁 — AS／AA／EY 之 FBA、EB Charge 判定規則與逐條範例，為步驟 3 規則表之主要依據</li>
+      <li>14 CFR § 399.87 — 美國出發／抵達行程之行李額度與費用，DOT 預設適用行程第一段之行銷承運人（Marketing Carrier）政策；<a href="https://www.ecfr.gov/current/title-14/chapter-II/subchapter-F/part-399/subpart-G/section-399.87" target="_blank" rel="noopener">eCFR 條文</a></li>
+      <li>IATA Resolution 302 — Most Significant Carrier（MSC）判定：依「跨 Area → 跨分區 → 同分區內第一個國際航段」順序，取該航段之行銷承運人（2015 年 4 月後開票適用）；個別承運人可能另有內規（如 AS 改取實際承運人）</li>
+      <li>加拿大 CTA 之對應規則與美國 DOT 類似，起訖涉加拿大時比照辦理，細節見 <a href="https://otc-cta.gc.ca/eng/publication/interline-baggage-rules-canada-interpretation-note" target="_blank" rel="noopener">CTA 說明</a></li>
+      <li>未列入規則表之航空公司，判定結果僅為 DOT／IATA 一般性推定，非該公司實際內規，請務必個別核對後再報價收費</li>
+    </ul>
+  </footer>
+</div>
+
+<div id="imgLightbox" class="lightbox" hidden>
+  <button type="button" class="lightbox-close" aria-label="關閉大圖">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Airport → Area/Subarea/Country lookup ----------
+  // area: 1 Americas / 2 EMEA / 3 Asia-Pacific
+  // subarea (informal, editable per SOP): NAM CAM CAR SAM | EUR MEA AFR | NEA JPK SEA SAS SWP
+  var AIRPORTS = {
+    // Taiwan / Greater China / Mongolia (NEA)
+    TPE:[3,"NEA","TW"], TSA:[3,"NEA","TW"], KHH:[3,"NEA","TW"], RMQ:[3,"NEA","TW"],
+    HKG:[3,"NEA","HK"], MFM:[3,"NEA","MO"],
+    PVG:[3,"NEA","CN"], SHA:[3,"NEA","CN"], PEK:[3,"NEA","CN"], PKX:[3,"NEA","CN"],
+    CAN:[3,"NEA","CN"], SZX:[3,"NEA","CN"], CTU:[3,"NEA","CN"], XIY:[3,"NEA","CN"],
+    HGH:[3,"NEA","CN"], XMN:[3,"NEA","CN"], CKG:[3,"NEA","CN"], WUH:[3,"NEA","CN"],
+    ULN:[3,"NEA","MN"],
+    // Japan / Korea
+    NRT:[3,"JPK","JP"], HND:[3,"JPK","JP"], KIX:[3,"JPK","JP"], ITM:[3,"JPK","JP"],
+    NGO:[3,"JPK","JP"], FUK:[3,"JPK","JP"], CTS:[3,"JPK","JP"], OKA:[3,"JPK","JP"],
+    ICN:[3,"JPK","KR"], GMP:[3,"JPK","KR"], PUS:[3,"JPK","KR"], CJU:[3,"JPK","KR"],
+    // South East Asia
+    BKK:[3,"SEA","TH"], DMK:[3,"SEA","TH"], SIN:[3,"SEA","SG"], KUL:[3,"SEA","MY"],
+    PEN:[3,"SEA","MY"], CGK:[3,"SEA","ID"], DPS:[3,"SEA","ID"], MNL:[3,"SEA","PH"],
+    CEB:[3,"SEA","PH"], HAN:[3,"SEA","VN"], SGN:[3,"SEA","VN"], DAD:[3,"SEA","VN"],
+    RGN:[3,"SEA","MM"], PNH:[3,"SEA","KH"], REP:[3,"SEA","KH"], VTE:[3,"SEA","LA"],
+    BWN:[3,"SEA","BN"],
+    // South Asian Subcontinent
+    DEL:[3,"SAS","IN"], BOM:[3,"SAS","IN"], BLR:[3,"SAS","IN"], MAA:[3,"SAS","IN"],
+    CCU:[3,"SAS","IN"], HYD:[3,"SAS","IN"], CMB:[3,"SAS","LK"], DAC:[3,"SAS","BD"],
+    KTM:[3,"SAS","NP"], KHI:[3,"SAS","PK"], ISB:[3,"SAS","PK"], MLE:[3,"SAS","MV"],
+    // South West Pacific
+    SYD:[3,"SWP","AU"], MEL:[3,"SWP","AU"], BNE:[3,"SWP","AU"], PER:[3,"SWP","AU"],
+    OOL:[3,"SWP","AU"], CNS:[3,"SWP","AU"], AKL:[3,"SWP","NZ"], CHC:[3,"SWP","NZ"],
+    NAN:[3,"SWP","FJ"], GUM:[3,"SWP","GU"], POM:[3,"SWP","PG"], NOU:[3,"SWP","NC"],
+    // North America
+    SEA:[1,"NAM","US"], PDX:[1,"NAM","US"], LAX:[1,"NAM","US"], SFO:[1,"NAM","US"],
+    SAN:[1,"NAM","US"], SJC:[1,"NAM","US"], ONT:[1,"NAM","US"], LAS:[1,"NAM","US"],
+    PHX:[1,"NAM","US"], DEN:[1,"NAM","US"], SLC:[1,"NAM","US"], ORD:[1,"NAM","US"],
+    MDW:[1,"NAM","US"], DFW:[1,"NAM","US"], IAH:[1,"NAM","US"], ATL:[1,"NAM","US"],
+    MIA:[1,"NAM","US"], MCO:[1,"NAM","US"], JFK:[1,"NAM","US"], EWR:[1,"NAM","US"],
+    LGA:[1,"NAM","US"], BOS:[1,"NAM","US"], IAD:[1,"NAM","US"], DCA:[1,"NAM","US"],
+    HNL:[1,"NAM","US"], OGG:[1,"NAM","US"], KOA:[1,"NAM","US"], ANC:[1,"NAM","US"],
+    DTW:[1,"NAM","US"], MSP:[1,"NAM","US"], CLT:[1,"NAM","US"], PHL:[1,"NAM","US"],
+    SAT:[1,"NAM","US"], AUS:[1,"NAM","US"],
+    YVR:[1,"NAM","CA"], YYZ:[1,"NAM","CA"], YUL:[1,"NAM","CA"], YYC:[1,"NAM","CA"],
+    YEG:[1,"NAM","CA"], YOW:[1,"NAM","CA"],
+    MEX:[1,"CAM","MX"], CUN:[1,"CAM","MX"], GDL:[1,"CAM","MX"],
+    SJO:[1,"CAM","CR"], PTY:[1,"CAM","PA"],
+    // Caribbean / South America
+    HAV:[1,"CAR","CU"], SJU:[1,"CAR","PR"], NAS:[1,"CAR","BS"],
+    GRU:[1,"SAM","BR"], GIG:[1,"SAM","BR"], EZE:[1,"SAM","AR"],
+    SCL:[1,"SAM","CL"], BOG:[1,"SAM","CO"], LIM:[1,"SAM","PE"],
+    // Europe
+    LHR:[2,"EUR","GB"], LGW:[2,"EUR","GB"], CDG:[2,"EUR","FR"], AMS:[2,"EUR","NL"],
+    FRA:[2,"EUR","DE"], MUC:[2,"EUR","DE"], FCO:[2,"EUR","IT"], MXP:[2,"EUR","IT"],
+    MAD:[2,"EUR","ES"], BCN:[2,"EUR","ES"], ZRH:[2,"EUR","CH"], VIE:[2,"EUR","AT"],
+    CPH:[2,"EUR","DK"], ARN:[2,"EUR","SE"], OSL:[2,"EUR","NO"], HEL:[2,"EUR","FI"],
+    IST:[2,"EUR","TR"], WAW:[2,"EUR","PL"], PRG:[2,"EUR","CZ"], LIS:[2,"EUR","PT"],
+    DUB:[2,"EUR","IE"], BRU:[2,"EUR","BE"], ATH:[2,"EUR","GR"],
+    // Middle East
+    DXB:[2,"MEA","AE"], AUH:[2,"MEA","AE"], DOH:[2,"MEA","QA"], JED:[2,"MEA","SA"],
+    RUH:[2,"MEA","SA"], TLV:[2,"MEA","IL"], AMM:[2,"MEA","JO"], BAH:[2,"MEA","BH"],
+    // Africa
+    JNB:[2,"AFR","ZA"], CPT:[2,"AFR","ZA"], CAI:[2,"AFR","EG"], NBO:[2,"AFR","KE"],
+    ADD:[2,"AFR","ET"], LOS:[2,"AFR","NG"], CMN:[2,"AFR","MA"]
+  };
+  var AREA_NAME = {1:"Area 1 美洲",2:"Area 2 歐非中東",3:"Area 3 亞太"};
+  var SUBAREA_NAME = {
+    NAM:"北美",CAM:"中美",CAR:"加勒比海",SAM:"南美",
+    EUR:"歐洲",MEA:"中東",AFR:"非洲",
+    NEA:"東北亞／大中華",JPK:"日韓",SEA:"東南亞",SAS:"南亞次大陸",SWP:"西南太平洋"
+  };
+
+  function lookup(code){
+    code = (code||"").trim().toUpperCase();
+    if(!code) return null;
+    var a = AIRPORTS[code];
+    if(!a) return {code:code, area:null, subarea:null, country:null, unknown:true};
+    return {code:code, area:a[0], subarea:a[1], country:a[2], unknown:false};
+  }
+
+  // ---------- Carrier exception rules (Step 3, editable) ----------
+  // allocUS/feeUS apply when the itinerary touches a US/Canada point (DOT/CTA
+  // jurisdiction); allocIntl/feeIntl apply otherwise (IATA baseline territory).
+  // Source: 《聯航作業說明 Interline Service Instruction》(updated 2026-07-14),
+  // "Baggage Information for Codeshare Flight" tab, verified against its
+  // worked scenarios line by line.
+  var rules = [
+    {code:"AS", allocUS:"msc-op", feeUS:"msc-op", allocIntl:"msc-op", feeIntl:"msc-op",
+      note:"Alaska：FBA 與 EB Charge 均採 MSC-OC（判定航段取實際承運人，非行銷承運人）。文件範例：DFW–(AS)–SFO–(AS*/JX)–TPE → FBA=JX、EB=JX；DFW–(JX*/AS)–SFO–(JX)–TPE → FBA=JX、EB=JX。文件僅列美加行程範例，未涉美加情境依同一邏輯套用，未見專門範例。",
+      confirmed:true},
+    {code:"AA", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
+      note:"American：涉美加行程 FBA／EB Charge 均採 FMC-MC。文件範例：JFK–(AA)–LAX–(AA*/JX)–TPE → FBA=AA、EB=AA；JFK–(JX*/AA)–LAX–(JX)–TPE → FBA=JX、EB=JX。未涉美加情境文件未提供範例，暫套用 IATA 標準 MSC 基準，未經驗證。適用範圍備註（文件原文）：“Taiwan and other Asian countries are included within the scope of the listed countries for Trans-Pacific (except Australia and New Zealand) routes.”（即台灣及其他亞洲國家均納入 Trans-Pacific 適用範圍，不含澳、紐）。",
+      confirmed:true,
+      refs:[{url:"https://www.aa.com/i18n/travel-info/baggage/checked-baggage-policy.jsp", label:"AA 官方行李政策頁面"}]},
+    {code:"EY", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"foc",
+      note:"Etihad：涉美加行程 FBA／EB Charge 均採 FMC-MC（文件範例：KIX–(EY*/JX)–TPE–(EY)–AUH–(EY)–JFK → FBA=EY、EB=EY）。未涉美加行程 FBA 採 MSC（取行銷承運人），EB Charge 改採「行程第一段之實際承運人」，兩者常不同（文件範例：KIX–(EY*/JX)–TPE–(EY)–AUH → FBA=EY、EB=JX；TPE–(JX*/EY)–AUH–(JX*/EY)–PRG → FBA=JX、EB=EY）。文件內另附一份未公開於 EY 官網的內部 Fix Fare 費率表（依 TC 區域對照、分重量制／件數制），截圖如下，僅供參考，可能與即時公告費率有出入，實際報價仍建議以下方官方計算器查詢為準。",
+      confirmed:true,
+      refs:[{url:"https://www.etihad.com/en/help/baggage-information/bagagge-calculator", label:"EY 行李計算器（需用旅客訂位代號登入查詢，最準確）"}],
+      shot:{src:"data:image/png;base64,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", caption:"EY Fix Fare 費率表（截自《聯航作業說明 Interline Service Instruction》EY Excess Baggage Fee Table 分頁）"}},
+    {code:"JX", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
+      note:"STARLUX：涉美加行程依 14 CFR 399.87 規定為 FMC，屬法規強制、非選擇性內規（依你確認）；未涉美加時則採 MSC 基準，判定航段取行銷承運人（IATA 標準寫法）。",
+      confirmed:true,
+      refs:[{url:"https://www.starlux-airlines.com/zh-TW/check-in-fly/baggage-information/excess-baggage-charge", label:"JX 官方行李政策頁面"},
+            {url:"https://tarahwh-crypto.github.io/excess-baggage-calculator/", label:"JX 超額行李計算機"}]},
+    {code:"EK", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
+      note:"Emirates：文件僅提供官方行李頁面連結，未列出與 JX 之 codeshare 專屬 FBA／EB 判定邏輯，暫套用 DOT／IATA 預設原則（涉美加 FMC、未涉美加 MSC），未經驗證。",
+      confirmed:false,
+      refs:[{url:"https://www.emirates.com/tw/english/before-you-fly/baggage/purchase-additional-baggage-allowance/", label:"EK 官方行李政策頁面"}]},
+    {code:"QR", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
+      note:"Qatar：文件僅提供官方行李頁面連結，未列出與 JX 之 codeshare 專屬 FBA／EB 判定邏輯，暫套用 DOT／IATA 預設原則，未經驗證。文件另註記開立超額行李 EMD 收據副本需包含：(1) 旅客姓名 (2) 航程起訖（收取超額行李費之最終目的地） (3) 收取金額與服務類型（如超額行李、特殊行李）。",
+      confirmed:false,
+      refs:[{url:"https://www.qatarairways.com/en-tw/baggage/excess.html", label:"QR 官方行李政策頁面"}]}
+  ];
+  // Fallback for any carrier not listed above — DOT/IATA baseline, no known deviation.
+  var DEFAULT_RULE = {code:"", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
+    note:"尚未列入規則表，暫依 DOT 預設 FMC（涉美加）／IATA 預設 MSC（未涉美加）原則處理。", confirmed:false};
+
+  // ---------- Segment rows (Step 1) ----------
+  var segBody = document.getElementById("segBody");
+  var rowSeq = 0;
+  // 航段表初始為空、且為編輯模式，方便直接手動輸入或貼上文字；
+  // 用「方式 A／B」解析文字帶入結果後，會自動反灰鎖定，避免場站同事誤改判定用的原始資料；
+  // 必填欄位（出發地／目的地／行銷承運人）留空時，不論鎖定與否都用紅框標示，
+  // 使用者需點「編輯航段」解鎖後才能修正或新增／刪除航段。
+  var segLocked = false;
+
+  function updateRowValidity(tr){
+    ["dep","arr","mkt"].forEach(function(f){
+      var el = tr.querySelector('[data-f="'+f+'"]');
+      if(el){ el.classList.toggle("incomplete", !el.value.trim()); }
+    });
+  }
+
+  function setSegLocked(locked){
+    segLocked = locked;
+    segBody.querySelectorAll("tr").forEach(function(tr){
+      tr.querySelectorAll("input").forEach(function(inp){ inp.disabled = locked; });
+      var delBtn = tr.querySelector(".icon-del");
+      if(delBtn) delBtn.disabled = locked;
+      updateRowValidity(tr);
+    });
+    var addBtn = document.getElementById("addRow");
+    if(addBtn) addBtn.disabled = locked;
+    var toggleBtn = document.getElementById("toggleEditSeg");
+    if(toggleBtn) toggleBtn.textContent = locked ? "✎ 編輯航段" : "✓ 完成編輯（鎖定）";
+    var hint = document.getElementById("segLockHint");
+    if(hint) hint.textContent = locked
+      ? "目前為鎖定檢視，如需修改請點「編輯航段」解鎖"
+      : "編輯中，修改完成後請點「完成編輯」重新鎖定";
+  }
+
+  function addSegRow(data){
+    data = data || {};
+    rowSeq++;
+    var tr = document.createElement("tr");
+    tr.dataset.id = rowSeq;
+    tr.innerHTML =
+      '<td><input class="cell" data-f="dep" maxlength="3" placeholder="三字代碼" value="'+(data.dep||"")+'"></td>'+
+      '<td><input class="cell" data-f="arr" maxlength="3" placeholder="三字代碼" value="'+(data.arr||"")+'"></td>'+
+      '<td><input class="cell" data-f="mkt" maxlength="2" placeholder="二字代碼" value="'+(data.mkt||"")+'"></td>'+
+      '<td><input class="cell" data-f="op" maxlength="2" placeholder="選填" value="'+(data.op||"")+'"></td>'+
+      '<td><input class="cell" data-f="flt" placeholder="選填" value="'+(data.flt||"")+'"></td>'+
+      '<td><input class="cell" data-f="date" placeholder="選填" value="'+(data.date||"")+'"></td>'+
+      '<td class="col-brk cell-chk-cell"><input type="checkbox" class="cell-chk" data-f="brk" title="到達地為停留點（斷點），行程從此分段"'+(data.brk?" checked":"")+'></td>'+
+      '<td class="col-del"><button class="icon-del" title="刪除此航段" aria-label="刪除此航段">✕</button></td>';
+    tr.querySelectorAll("input").forEach(function(inp){
+      if(inp.type === "checkbox") return;
+      inp.addEventListener("input", function(){
+        if(inp.dataset.f==="dep"||inp.dataset.f==="arr"||inp.dataset.f==="mkt"||inp.dataset.f==="op"){
+          inp.value = inp.value.toUpperCase();
+        }
+        updateRowValidity(tr);
+        recompute();
+      });
+    });
+    tr.querySelector('[data-f="brk"]').addEventListener("change", function(){ recompute(); });
+    tr.querySelector(".icon-del").addEventListener("click", function(){
+      tr.remove();
+      recompute();
+    });
+    segBody.appendChild(tr);
+    tr.querySelectorAll("input").forEach(function(inp){ inp.disabled = segLocked; });
+    tr.querySelector(".icon-del").disabled = segLocked;
+    updateRowValidity(tr);
+  }
+
+  function readSegments(){
+    var out = [];
+    segBody.querySelectorAll("tr").forEach(function(tr){
+      var get = function(f){ var el=tr.querySelector('[data-f="'+f+'"]'); return el?el.value.trim():""; };
+      var dep = get("dep"), arr = get("arr");
+      if(!dep && !arr) return;
+      var brkEl = tr.querySelector('[data-f="brk"]');
+      out.push({dep:dep, arr:arr, mkt:get("mkt"), op:get("op"), flt:get("flt"), date:get("date"), brk: !!(brkEl && brkEl.checked)});
+    });
+    return out;
+  }
+
+  document.getElementById("addRow").addEventListener("click", function(){ addSegRow(); recompute(); });
+  document.getElementById("clearRows").addEventListener("click", function(){
+    segBody.innerHTML = "";
+    setSegLocked(false); // empty table → straight into edit mode for manual entry
+    recompute();
+  });
+  document.getElementById("toggleEditSeg").addEventListener("click", function(){
+    setSegLocked(!segLocked);
+  });
+
+  // ---------- Rules table (Step 3) ----------
+  var rulesBody = document.getElementById("rulesBody");
+  var MODE_LABEL = {
+    fmc:"自家政策（FMC）",
+    "msc-mkt":"MSC（取行銷承運人・IATA 標準）",
+    "msc-op":"MSC（取實際承運人・該公司內規）",
+    foc:"第一家實際承運人",
+    other:"其他 / 需人工確認"
+  };
+  var MODE_KEYS = ["fmc","msc-mkt","msc-op","foc","other"];
+
+  // 規則表僅供查閱（唯讀），使用介面不提供新增／修改／刪除，避免場站同事誤動判定依據。
+  // 如需調整規則，請直接更新本檔案中的 rules 陣列（或請 AOD 管理單位協助）。
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>]/g, function(c){
+      return c==="&" ? "&amp;" : c==="<" ? "&lt;" : "&gt;";
+    });
+  }
+  function renderRules(){
+    rulesBody.innerHTML = "";
+    rules.forEach(function(r){
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="mono">'+esc(r.code)+'</td>'+
+        '<td>'+esc(MODE_LABEL[r.allocUS]||r.allocUS)+'</td>'+
+        '<td>'+esc(MODE_LABEL[r.feeUS]||r.feeUS)+'</td>'+
+        '<td>'+esc(MODE_LABEL[r.allocIntl]||r.allocIntl)+'</td>'+
+        '<td>'+esc(MODE_LABEL[r.feeIntl]||r.feeIntl)+'</td>'+
+        '<td>'+esc(r.note)+
+          (r.shot?('<div class="rule-shot"><img src="'+r.shot.src+'" alt="'+esc(r.shot.caption)+'" loading="lazy"><div class="rule-shot-cap">'+esc(r.shot.caption)+'（點圖可放大檢視）</div></div>'):'')+
+          ((r.refs&&r.refs.length)?r.refs.map(function(rf){ return '<br><a class="ref-link" href="'+esc(rf.url)+'" target="_blank" rel="noopener noreferrer">🔗 '+esc(rf.label)+'</a>'; }).join(''):'')+
+        '</td>'+
+        '<td><span class="badge '+(r.confirmed?"confirmed":"unconfirmed")+'">'+(r.confirmed?"已確認":"待確認")+'</span></td>';
+      rulesBody.appendChild(tr);
+    });
+  }
+
+  function findRule(code){
+    code = (code||"").toUpperCase();
+    for(var i=0;i<rules.length;i++){ if(rules[i].code===code) return rules[i]; }
+    return null;
+  }
+
+  // ---------- MSC / FMC determination ----------
+  function classifySeg(seg){
+    return {dep:lookup(seg.dep), arr:lookup(seg.arr), mkt:(seg.mkt||"").toUpperCase(), op:(seg.op||"").toUpperCase()};
+  }
+
+  // basis: 'mkt' (official IATA Reso 302 post-2015 default — marketing carrier
+  // of the qualifying segment) or 'op' (some carriers' own internal MSC
+  // implementation instead reads the operating carrier of that segment — this
+  // is a carrier-specific variant, not the published IATA default).
+  function pickCarrier(s, basis){ return basis==="op" ? (s.op||s.mkt) : s.mkt; }
+
+  function computeMSC(csegs, basis){
+    basis = basis || "mkt";
+    var touchedAreas = {};
+    csegs.forEach(function(s){
+      if(s.dep&&s.dep.area) touchedAreas[s.dep.area]=true;
+      if(s.arr&&s.arr.area) touchedAreas[s.arr.area]=true;
+    });
+    var allThree = touchedAreas[1]&&touchedAreas[2]&&touchedAreas[3];
+    var basisLabel = basis==="op" ? "實際承運人" : "行銷承運人";
+
+    if(allThree){
+      for(var i=0;i<csegs.length;i++){
+        var s=csegs[i];
+        if(!s.dep||!s.arr||!s.dep.area||!s.arr.area) continue;
+        var pair = [s.dep.area,s.arr.area].sort().join("-");
+        if(pair==="1-2"){
+          return {carrier:pickCarrier(s,basis), index:i, tier:"area", note:"行程橫跨 Area 1／2／3 三大區，依規則優先取 Area 1↔2 跨區航段（取"+basisLabel+"）"};
+        }
+      }
+    }
+    for(var i=0;i<csegs.length;i++){
+      var s=csegs[i];
+      if(!s.dep||!s.arr||!s.dep.area||!s.arr.area) continue;
+      if(s.dep.area!==s.arr.area){
+        return {carrier:pickCarrier(s,basis), index:i, tier:"area", note:"第一個跨 Area 之航段（取"+basisLabel+"）"};
+      }
+    }
+    for(var i=0;i<csegs.length;i++){
+      var s=csegs[i];
+      if(!s.dep||!s.arr||!s.dep.subarea||!s.arr.subarea) continue;
+      if(s.dep.subarea!==s.arr.subarea){
+        return {carrier:pickCarrier(s,basis), index:i, tier:"subarea", note:"同一 Area 內，第一個跨分區之航段（取"+basisLabel+"）"};
+      }
+    }
+    for(var i=0;i<csegs.length;i++){
+      var s=csegs[i];
+      if(!s.dep||!s.arr||!s.dep.country||!s.arr.country) continue;
+      if(s.dep.country!==s.arr.country){
+        return {carrier:pickCarrier(s,basis), index:i, tier:"international", note:"同一分區內，第一個國際航段（取"+basisLabel+"）"};
+      }
+    }
+    return null;
+  }
+
+  function computeFMC(csegs){
+    if(!csegs.length) return null;
+    return {carrier:csegs[0].mkt, index:0};
+  }
+
+  // "First actual/operating carrier" — some interline partners (e.g. EY) price
+  // excess baggage off the operating carrier of the itinerary's first segment,
+  // independent of MSC/FMC. This is a carrier-negotiated convention, not a
+  // DOT/IATA rule, so it only applies where the rules table says so.
+  function computeFOC(csegs){
+    if(!csegs.length) return null;
+    var s = csegs[0];
+    var carrier = s.op || s.mkt;
+    return {carrier:carrier, index:0, usedOperating: !!s.op};
+  }
+
+  function fmt(seg, i){
+    if(!seg||!seg.dep||!seg.arr) return "第 "+(i+1)+" 段";
+    return seg.dep.code+"–"+seg.arr.code+"（"+(seg.mkt||"—")+(seg.op?" / op "+seg.op:"")+"）";
+  }
+
+  function traceItem(label, html){
+    var div = document.createElement("div");
+    div.className = "trace-item";
+    div.innerHTML =
+      '<div class="trace-line"><div class="trace-dot"></div></div>'+
+      '<div><div class="trace-label">'+label+'</div><div class="trace-body">'+html+'</div></div>';
+    return div;
+  }
+
+  // Resolve one output (alloc or fee) given the chosen mode, reusing an
+  // already-computed MSC/FOC result where possible so we don't recompute twice.
+  function resolveByMode(mode, fmc, mscMkt, mscOp, focResult){
+    if(mode==="fmc") return {carrier:fmc.carrier, basisFrag:"適用 FMC（"+fmc.carrier+"）自家政策"};
+    if(mode==="msc-mkt") return mscMkt
+      ? {carrier:mscMkt.carrier, basisFrag:"改採 MSC，"+mscMkt.note+"之判定結果"}
+      : {carrier:null, basisFrag:"無法計算 MSC"};
+    if(mode==="msc-op") return mscOp
+      ? {carrier:mscOp.carrier, basisFrag:"改採 MSC（該公司內規取實際承運人），"+mscOp.note+"之判定結果"}
+      : {carrier:null, basisFrag:"無法計算 MSC"};
+    if(mode==="foc") return focResult
+      ? {carrier:focResult.carrier, basisFrag:"改採「第一家實際承運人」（行程第一段"+(focResult.usedOperating?"實際承運人":"行銷承運人，未填實際承運人故視為相同")+"）"}
+      : {carrier:null, basisFrag:"無法判定第一家實際承運人"};
+    return {carrier:fmc.carrier, basisFrag:"標示為其他／需人工確認，暫列 FMC 供參考，請人工核對"};
+  }
+
+  function resultCardHTML(label, carrier, note, confirmed){
+    var rule = carrier ? findRule(carrier) : null;
+    var isFeeCard = label.indexOf("超額") !== -1;
+    var shotHTML = "";
+    if(rule && rule.shot && isFeeCard){
+      shotHTML = '<div class="rule-shot"><img src="'+rule.shot.src+'" alt="'+esc(rule.shot.caption)+'" loading="lazy"><div class="rule-shot-cap">'+esc(rule.shot.caption)+'（點圖可放大檢視）</div></div>';
+    }
+    var linksHTML = "";
+    if(rule && rule.refs && rule.refs.length){
+      linksHTML = '<div class="result-links">' + rule.refs.map(function(rf){
+        return '<a class="ref-link" href="'+esc(rf.url)+'" target="_blank" rel="noopener noreferrer">🔗 '+esc(rf.label)+'</a>';
+      }).join('') + '</div>';
+    }
+    return '<div class="result-card'+(confirmed?"":" unconfirmed")+'">'+
+      '<div><div class="result-carrier">'+label+'<span class="code">'+(carrier||"—")+'</span></div></div>'+
+      '<div class="result-note">'+note+(carrier && !confirmed ? "（尚待規則確認，勿直接用於報價）" : "")+'</div>'+
+      shotHTML +
+      linksHTML +
+      '</div>';
+  }
+
+  // ---------- Core determination for ONE journey (a run of segments with no
+  // stopover break in between). Returns trace items as plain data (not DOM
+  // nodes yet) so recompute() can render one journey or many identically. ----------
+  function determineJourney(csegs){
+    var traceItems = [];
+    var unknown = [];
+    csegs.forEach(function(s){
+      [s.dep,s.arr].forEach(function(pt){
+        if(pt && pt.unknown && unknown.indexOf(pt.code)===-1) unknown.push(pt.code);
+      });
+    });
+
+    var touchesUS = csegs.some(function(s){
+      return (s.dep&&(s.dep.country==="US"||s.dep.country==="CA")) ||
+             (s.arr&&(s.arr.country==="US"||s.arr.country==="CA"));
+    });
+
+    traceItems.push({label:"起訖點判斷", html:
+      "行程中" + (touchesUS?"<b>含美國／加拿大機場</b>":"<b>未含美國／加拿大機場</b>") +
+      "。" + (touchesUS
+        ? '依 <span class="cite">14 CFR § 399.87</span> 及 CTA 對應規則，DOT 預設以行程第一段行銷承運人（FMC）整段適用，但各承運人可能於 interline 協議中另行約定。'
+        : "未觸及美加，DOT／CTA 管轄不適用，預設以 IATA MSC 基準判定，但各承運人仍可能另有約定。")
+    });
+
+    var fmc = computeFMC(csegs);
+    var allocOut = {carrier:null, note:"", confirmed:true};
+    var feeOut = {carrier:null, note:"", confirmed:true};
+
+    if(fmc && fmc.carrier){
+      traceItems.push({label:"第一行銷承運人（FMC）", html:
+        "行程第一段為 " + fmt(csegs[0],0) + "，行銷承運人 <b>"+fmc.carrier+"</b> 即為 FMC（機械式定義：行程第一段的行銷承運人代碼）。"
+      });
+
+      // Which interline partner's rule applies is NOT necessarily "whoever is
+      // FMC" — 《聯航作業說明》's per-partner rows describe STARLUX's
+      // agreement with that partner, which governs whenever the partner
+      // appears anywhere in the itinerary (marketing OR operating), even on
+      // segments where JX itself happens to hold the marketing designator.
+      // Verified against the document's worked examples: e.g. EY scenario
+      // "TPE-(JX*/EY)-AUH-(JX*/EY)-PRG" has FMC=JX but is still governed by
+      // EY's row, because EY operates those segments.
+      var partner = null, partnerCode = null;
+      for(var pi=0; pi<csegs.length && !partner; pi++){
+        var ps = csegs[pi];
+        if(ps.mkt && ps.mkt!=="JX" && findRule(ps.mkt)){ partner = findRule(ps.mkt); partnerCode = ps.mkt; break; }
+        if(ps.op && ps.op!=="JX" && findRule(ps.op)){ partner = findRule(ps.op); partnerCode = ps.op; break; }
+      }
+      var isCustom = !!partner;
+      if(!partner){ partner = findRule("JX"); partnerCode = partner ? "JX" : null; }
+      var rule = partner || DEFAULT_RULE;
+      var allocMode = touchesUS ? rule.allocUS : rule.allocIntl;
+      var feeMode = touchesUS ? rule.feeUS : rule.feeIntl;
+      var confirmed = rule.confirmed;
+
+      traceItems.push({label:"查例外規則表（"+(touchesUS?"涉美加":"未涉美加")+"）", html:
+        (isCustom
+          ? "行程中出現合作夥伴 <b>"+partnerCode+"</b>，套用其於步驟 3 規則表中之設定"
+          : (partnerCode ? "行程全程為 <b>JX</b>，套用 JX 自身設定" : "行程中未出現已登錄之合作夥伴，套用預設規則")) +
+        "：免費行李額度＝<b>"+MODE_LABEL[allocMode]+"</b>、超額行李費率＝<b>"+MODE_LABEL[feeMode]+"</b>。" +
+        (rule.note? " "+rule.note : "") +
+        (confirmed ? "" : "（<span class='badge unconfirmed'>待確認</span>，如需確認或補充請洽 AOD 管理單位）")
+      });
+
+      var needMSCmkt = (allocMode==="msc-mkt" || feeMode==="msc-mkt");
+      var needMSCop = (allocMode==="msc-op" || feeMode==="msc-op");
+      var needFOC = (allocMode==="foc" || feeMode==="foc");
+      var mscMktResult = needMSCmkt ? computeMSC(csegs,"mkt") : null;
+      var mscOpResult = needMSCop ? computeMSC(csegs,"op") : null;
+      var focResult = needFOC ? computeFOC(csegs) : null;
+
+      [["mkt",mscMktResult,needMSCmkt],["op",mscOpResult,needMSCop]].forEach(function(pair){
+        var basis=pair[0], res=pair[1], needed=pair[2];
+        if(!needed) return;
+        if(res && res.carrier){
+          traceItems.push({label:"計算 MSC（"+(basis==="op"?"取實際承運人":"取行銷承運人")+"）", html:
+            res.note + "：" + fmt(csegs[res.index], res.index) + "，結果 <b>"+res.carrier+"</b>。"
+          });
+        } else {
+          traceItems.push({label:"計算 MSC", html:"行程資料不足以判定跨區航段，無法計算 MSC，請確認機場代碼是否正確或行程是否完整。"});
+        }
+      });
+      if(needFOC){
+        if(focResult && focResult.carrier){
+          traceItems.push({label:"第一家實際承運人", html:
+            fmt(csegs[0],0) + " 之實際承運人為 <b>"+focResult.carrier+"</b>" + (focResult.usedOperating? "" : "（未填實際承運人，視為與行銷承運人相同）") + "。"
+          });
+        } else {
+          traceItems.push({label:"第一家實際承運人", html:"無法判定。"});
+        }
+      }
+
+      var a = resolveByMode(allocMode, fmc, mscMktResult, mscOpResult, focResult);
+      var f = resolveByMode(feeMode, fmc, mscMktResult, mscOpResult, focResult);
+      allocOut = {carrier:a.carrier, note:a.basisFrag, confirmed:confirmed};
+      feeOut = {carrier:f.carrier, note:f.basisFrag, confirmed:confirmed};
+    } else {
+      traceItems.push({label:"等待輸入", html:"請於步驟 1 使用「方式 A」貼上行程文字，或點「＋ 新增航段」手動輸入。"});
+    }
+
+    return {touchesUS:touchesUS, traceItems:traceItems, unknown:unknown, allocOut:allocOut, feeOut:feeOut};
+  }
+
+  // Split raw segment rows into journeys at "到達地停留（斷點）" checkboxes.
+  // A checked box on segment i means: segment i is the LAST segment of its
+  // journey, and segment i+1 (arriving/departing the same airport) starts a
+  // new journey. No breaks at all → exactly one journey (fully backward
+  // compatible with itineraries entered before this feature existed).
+  function splitIntoJourneys(raw){
+    var journeys = [[]];
+    raw.forEach(function(seg){
+      journeys[journeys.length-1].push(seg);
+      if(seg.brk){ journeys.push([]); }
+    });
+    if(journeys.length>1 && journeys[journeys.length-1].length===0){ journeys.pop(); }
+    return journeys;
+  }
+
+  function journeyRouteLabel(rawSegs){
+    if(!rawSegs.length) return "";
+    var codes = [rawSegs[0].dep];
+    rawSegs.forEach(function(s){ codes.push(s.arr); });
+    return codes.filter(Boolean).join(" → ");
+  }
+
+  function recompute(){
+    var raw = readSegments();
+    var resultsContainer = document.getElementById("resultsContainer");
+    var traceContainer = document.getElementById("traceContainer");
+    var unknownBox = document.getElementById("unknownAirports");
+    resultsContainer.innerHTML = "";
+    traceContainer.innerHTML = "";
+    unknownBox.innerHTML = "";
+
+    if(!raw.length){
+      resultsContainer.innerHTML = '<div class="result-grid">' +
+        resultCardHTML("免費託運行李額度", null, "", true) +
+        resultCardHTML("超額行李費率", null, "", true) +
+        '</div>';
+      traceContainer.appendChild(traceItem("等待輸入","請於步驟 1 使用「方式 A」貼上行程文字，或點「＋ 新增航段」手動輸入。"));
+      return;
+    }
+
+    var journeysRaw = splitIntoJourneys(raw);
+    var multi = journeysRaw.length > 1;
+    var allUnknown = [];
+
+    journeysRaw.forEach(function(rawSegs, ji){
+      var csegs = rawSegs.map(classifySeg);
+      var result = determineJourney(csegs);
+      result.unknown.forEach(function(code){ if(allUnknown.indexOf(code)===-1) allUnknown.push(code); });
+
+      if(multi){
+        var head = document.createElement("div");
+        head.className = "journey-head";
+        head.textContent = "第 "+(ji+1)+" 段行程：" + journeyRouteLabel(rawSegs);
+        resultsContainer.appendChild(head);
+        var thead = document.createElement("div");
+        thead.className = "trace-journey-head";
+        thead.textContent = "第 "+(ji+1)+" 段行程：" + journeyRouteLabel(rawSegs);
+        traceContainer.appendChild(thead);
+      }
+
+      var grid = document.createElement("div");
+      grid.className = "result-grid";
+      grid.innerHTML =
+        resultCardHTML("免費託運行李額度", result.allocOut.carrier, result.allocOut.note, result.allocOut.confirmed) +
+        resultCardHTML("超額行李費率", result.feeOut.carrier, result.feeOut.note, result.feeOut.confirmed);
+      resultsContainer.appendChild(grid);
+
+      if(result.allocOut.carrier && result.feeOut.carrier && result.allocOut.carrier!==result.feeOut.carrier){
+        var dn = document.createElement("div");
+        dn.className = "diverge-note";
+        dn.textContent = "⚠ 本"+(multi?"段":"行程")+"「免費行李額度」與「超額行李費率」適用不同承運人，請分開查表，勿混用同一家費率表。";
+        resultsContainer.appendChild(dn);
+      }
+
+      result.traceItems.forEach(function(item){
+        traceContainer.appendChild(traceItem(item.label, item.html));
+      });
+    });
+
+    if(allUnknown.length){
+      unknownBox.innerHTML = '<span class="badge unconfirmed">未收錄機場</span> '+allUnknown.join("、")+' — 判定過程將略過涉及這些機場的跨區比對，結果僅供參考。';
+    }
+  }
+
+  // ---------- Method A: paste itinerary text (rule-based, no AI) ----------
+  // Two input formats are auto-detected and supported:
+  //   Format 1 (simplified, one line = one segment with both dep+arr):
+  //     "1 TPE SEA X AS 7210 JX O 28SEP"
+  //   Format 2 (real PNR / reservation-system itinerary print, one line =
+  //     one POINT, chained to the next line's point; a leading O/X marks
+  //     stopover vs. pure connection at that point; a final line with just
+  //     an airport code closes the last segment's arrival):
+  //     "1 OOKA EY5182JX Q 15SEP1550 OK QNN05C5R      F   15SEP15SEP 30K"
+  //     "2 XTPE EY 899   Q 15SEP1940 OK QNN05C5R      F   15SEP15SEP 30K"
+  //     ...
+  //     "  OKA"
+  //   An "O" (stopover) on an interior point marks a journey break: the
+  //   segment arriving there gets brk=true, so recompute() will determine
+  //   the outbound and return portions separately (confirmed with Tara —
+  //   a real stopover, not just a plane change, splits the FMC/MSC basis).
+
+  function parseSimpleFormat(lines){
+    var rows = [];
+    var failed = [];
+    lines.forEach(function(raw, i){
+      var line = raw.trim();
+      if(!line) return;
+      var lineNo = i+1;
+      var tokens = line.split(/\s+/).filter(Boolean).map(function(t){ return t.toUpperCase(); });
+      if(/^\d{1,3}$/.test(tokens[0]) && tokens.length >= 5){ tokens.shift(); }
+      if(tokens.length < 4){
+        failed.push({line:lineNo, reason:"欄位不足（至少需要出發地、目的地、承運人、航班）"});
+        return;
+      }
+      var idx = 0;
+      var dep = tokens[idx];
+      if(!/^[A-Z]{3}$/.test(dep)){ failed.push({line:lineNo, reason:"無法辨識出發地機場代碼"}); return; }
+      idx++;
+      var arr = tokens[idx];
+      if(!/^[A-Z]{3}$/.test(arr)){ failed.push({line:lineNo, reason:"無法辨識目的地機場代碼"}); return; }
+      idx++;
+      if(idx<tokens.length && /^[A-Z]$/.test(tokens[idx])){ idx++; } // optional stop/connection indicator
+      if(idx>=tokens.length || !/^[A-Z0-9]{2,3}$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識行銷承運人代碼"}); return; }
+      var mkt = tokens[idx]; idx++;
+      if(idx>=tokens.length || !/^\d{1,5}[A-Z]?$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識航班號"}); return; }
+      var flt = tokens[idx]; idx++;
+      var op = "";
+      if(idx<tokens.length && /^[A-Z0-9]{2,3}$/.test(tokens[idx]) && tokens[idx]!==mkt){ op = tokens[idx]; idx++; }
+      if(idx<tokens.length && /^[A-Z]$/.test(tokens[idx])){ idx++; } // optional booking class
+      var date = "";
+      if(idx<tokens.length && /^\d{1,2}[A-Z]{3}$/.test(tokens[idx])){ date = tokens[idx]; idx++; }
+      rows.push({dep:dep, arr:arr, mkt:mkt, op:op, flt:flt, date:date, brk:false});
+    });
+    return {rows:rows, failed:failed};
+  }
+
+  function parseChainFormat(lines){
+    var points = []; // {airport, flag, mkt, op, flt, date, lineNo}
+    var failed = [];
+    var tailAirport = null;
+
+    lines.forEach(function(raw, i){
+      var line = raw.trim();
+      if(!line) return;
+      var lineNo = i+1;
+      var upper = line.toUpperCase();
+
+      // A line that is ONLY an airport code closes the itinerary's final arrival.
+      if(/^[A-Z]{3}$/.test(upper)){
+        tailAirport = upper;
+        return;
+      }
+
+      // Seq number and the O/X stopover flag are BOTH optional — some systems'
+      // itinerary dumps omit one or both (confirmed against real EY and JX
+      // screens: with/without seq, with/without O/X all seen in practice).
+      var m = upper.match(/^(?:(\d{1,3})\s+)?([OX])?([A-Z]{3})\s+(.*)$/);
+      if(!m){
+        failed.push({line:lineNo, reason:"無法辨識此行格式（非「（序號）（O/X）機場 航班…」或純機場代碼行）"});
+        return;
+      }
+      var flag = m[2], airport = m[3], rest = m[4];
+
+      var fm = rest.match(/^([A-Z0-9]{2})\s*(\d{2,5})([A-Z]{2})?\b/);
+      if(!fm){
+        failed.push({line:lineNo, reason:"無法辨識航班欄位（承運人／航班號）"});
+        return;
+      }
+      var mkt = fm[1], flt = fm[2], op = fm[3] || "";
+
+      var dm = rest.match(/(\d{2}[A-Z]{3})\d{4}\b/);
+      var date = dm ? dm[1] : "";
+
+      points.push({airport:airport, flag:flag, mkt:mkt, op:op, flt:flt, date:date, lineNo:lineNo});
+    });
+
+    var rows = [];
+    for(var i=0; i<points.length; i++){
+      var p = points[i];
+      var arr, brk;
+      if(i < points.length-1){
+        arr = points[i+1].airport;
+        brk = (points[i+1].flag === "O"); // stopover at the NEXT point breaks the journey here
+      } else if(tailAirport){
+        arr = tailAirport;
+        brk = false;
+      } else {
+        arr = "";
+        brk = false;
+        failed.push({line:p.lineNo, reason:"這是行程最後一段，但找不到最終到達地（訂位系統文字結尾通常會單獨列出一個機場代碼），請手動補上到達地"});
+      }
+      rows.push({dep:p.airport, arr:arr, mkt:p.mkt, op:p.op, flt:p.flt, date:p.date, brk:brk});
+    }
+    return {rows:rows, failed:failed};
+  }
+
+  // A line "looks like" chain format (Format 2: one point per line) when,
+  // after the optional seq number and optional O/X flag, what follows the
+  // airport code is a carrier+flight pattern ("JX 823", "JX7084AS") rather
+  // than a second bare 3-letter airport code (which would mean Format 1:
+  // "dep arr ..." on one line).
+  function looksLikeChainLine(upper){
+    var m = upper.match(/^(?:\d{1,3}\s+)?(?:[OX])?([A-Z]{3})\s+(.*)$/);
+    if(!m) return false;
+    var restFirstTok = (m[2].trim().split(/\s+/)[0]) || "";
+    if(/^[A-Z]{3}$/.test(restFirstTok)) return false; // next token is itself an airport → Format 1
+    return /^[A-Z0-9]{2}\s*\d{2,5}/.test(m[2].trim());
+  }
+
+  function parseItineraryText(text){
+    var lines = String(text||"").split(/\n/);
+    var isChainFormat = lines.some(function(raw){
+      var t = raw.trim();
+      return t && looksLikeChainLine(t.toUpperCase());
+    });
+    return isChainFormat ? parseChainFormat(lines) : parseSimpleFormat(lines);
+  }
+
+  // 共用：把行程文字解析並直接帶入航段表、完成判定（方式 A 手動觸發、方式 B OCR 完成後自動觸發皆呼叫此函式）。
+  function applyParsedText(text){
+    var result = parseItineraryText(text);
+    if(!result.rows.length){
+      return {ok:false, cls:"err",
+        message:"未能解析出任何航段，請確認格式是否接近範例（如「1 TPE SEA X AS 7210 JX O 28SEP」，或訂位系統的逐點行程文字），或改用手動輸入。"};
+    }
+    segBody.innerHTML = "";
+    result.rows.forEach(function(r){ addSegRow(r); });
+    setSegLocked(true); // 帶入結果 → 預設鎖定，不完整欄位以紅框標示
+    recompute();
+    var brkCount = result.rows.filter(function(r){ return r.brk; }).length;
+    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "");
+    if(result.failed.length){
+      var lineNos = result.failed.map(function(f){ return f.line; }).join("、");
+      return {ok:true, cls:"err", message: msg+"，另有第 "+lineNos+" 行無法辨識（下方已用紅框標示），請點「編輯航段」解鎖後手動核對或補充。"};
+    }
+    return {ok:true, cls:"ok", message: msg+" —— 請核對下方航段與判定結果是否正確。"};
+  }
+
+  (function initParse(){
+    var parseText = document.getElementById("parseText");
+    var goBtn = document.getElementById("parseGo");
+    var status = document.getElementById("parseStatus");
+
+    function setStatus(text, cls){
+      status.textContent = text || "";
+      status.className = "ocr-status" + (cls? " "+cls : "");
+    }
+
+    goBtn.addEventListener("click", function(){
+      var text = parseText.value;
+      if(!text || !text.trim()){ setStatus("請先貼上行程文字。","err"); return; }
+      var r = applyParsedText(text);
+      setStatus(r.message, r.cls);
+    });
+  })();
+
+  // ---------- Method B: image OCR via Tesseract.js (traditional OCR, non-AI) ----------
+  function loadTesseract(){
+    return new Promise(function(resolve, reject){
+      if(window.Tesseract){ resolve(window.Tesseract); return; }
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/7.0.0/tesseract.min.js";
+      s.onload = function(){
+        if(window.Tesseract){ resolve(window.Tesseract); }
+        else { reject(new Error("tesseract_load_failed")); }
+      };
+      s.onerror = function(){ reject(new Error("tesseract_load_failed")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  (function initOcrLite(){
+    var fileInput = document.getElementById("ocrLiteFile");
+    var goBtn = document.getElementById("ocrLiteGo");
+    var status = document.getElementById("ocrLiteStatus");
+    var parseTextEl = document.getElementById("parseText");
+
+    function setStatus(text, cls){
+      status.textContent = text || "";
+      status.className = "ocr-status" + (cls? " "+cls : "");
+    }
+
+    goBtn.addEventListener("click", function(){
+      var files = fileInput.files;
+      if(!files || !files.length){ setStatus("請先選擇一張截圖。","err"); return; }
+      var file = files[0];
+      goBtn.disabled = true;
+      setStatus("載入 OCR 引擎並辨識中，請稍候（首次使用可能需 10–30 秒）…");
+
+      loadTesseract().then(function(Tesseract){
+        return Tesseract.recognize(file, "eng");
+      }).then(function(result){
+        var text = (result && result.data && result.data.text) || "";
+        if(!text.trim()){
+          setStatus("未能從圖片中辨識出文字，請換一張較清晰的截圖，或改用「貼上行程文字」。","err");
+          return;
+        }
+        parseTextEl.value = text.trim();
+        var r = applyParsedText(text);
+        var prefix = r.ok ? "OCR 辨識完成，已直接完成判定。" : "OCR 已抽出文字，但無法自動解析出航段，請於上方文字框核對修正後按「解析文字並帶入」。";
+        var suffix = r.ok ? "（OCR 常見誤判如 0/O、1/I、B/8，請核對上方文字與下方判定結果；如需修正，改好文字後按「解析文字並帶入」即可重新判定。）" : "";
+        setStatus(prefix + (r.ok ? " " + r.message : "") + suffix, r.cls);
+      }).catch(function(){
+        setStatus("無法載入或執行 OCR 引擎，請確認網路連線，或改用「貼上行程文字」。","err");
+      }).finally(function(){ goBtn.disabled = false; });
+    });
+  })();
+
+  // ---------- Screenshot recognition (optional, via Claude) ----------
+  (function initOCR(){
+    var box = document.getElementById("ocrBox");
+    var fileInput = document.getElementById("ocrFile");
+    var goBtn = document.getElementById("ocrGo");
+    var status = document.getElementById("ocrStatus");
+    var sample = null;
+
+    function setStatus(text, cls){
+      status.textContent = text || "";
+      status.className = "ocr-status" + (cls? " "+cls : "");
+    }
+
+    if(!window.claude || typeof window.claude.use !== "function"){ return; }
+
+    window.claude.use("sample").then(function(s){
+      if(!s){ return; }
+      sample = s;
+      return sample.limits().catch(function(){ return null; });
+    }).then(function(limits){
+      if(!sample || !limits || !limits.images){ return; }
+      box.hidden = false;
+      if(limits.images.mediaTypes){ fileInput.accept = limits.images.mediaTypes.join(","); }
+    }).catch(function(){ /* sample unavailable — keep manual entry only */ });
+
+    goBtn.addEventListener("click", function(){
+      if(!sample){ setStatus("此檢視環境無法使用辨識功能，請手動輸入。","err"); return; }
+      var files = fileInput.files;
+      if(!files || !files.length){ setStatus("請先選擇一張或多張機票／行程截圖。","err"); return; }
+
+      goBtn.disabled = true;
+      setStatus("辨識中，請稍候（約需 10–60 秒）…");
+
+      var prompt = "以下是一張或多張航空公司訂位／開票系統的行程截圖。請仔細判讀畫面上的行程表格，" +
+        "依「出發地→目的地」順序列出每一個航段，並嚴格只回覆一個 JSON 陣列，不要有其他文字或說明。\n\n" +
+        "每個元素代表一個航段，欄位如下：\n" +
+        '- dep：出發地機場三字代碼（大寫）\n' +
+        '- arr：目的地機場三字代碼（大寫）\n' +
+        '- mkt：行銷承運人二字代碼（大寫）。畫面「航班」欄通常顯示如 "AS 7210 JX"，其中前面的字母（AS）是行銷承運人\n' +
+        '- op：實際承運人二字代碼（大寫）。若同一格內在行銷承運人與航班號之後另外標示一個航空公司代碼（如 "AS 7210 JX" 的 JX），代表該段由不同公司實際飛航，填入該代碼；若沒有另外標示，填空字串 ""\n' +
+        '- flt：航班號碼（僅數字部分，字串）\n' +
+        '- date：畫面顯示的日期（字串，如 "28SEP"），若無則填空字串\n\n' +
+        '只根據畫面上實際出現的內容判讀，看不清楚的欄位就填空字串，不要猜測或編造。若完全無法辨識任何航段，回覆 []。\n\n' +
+        '回覆範例（僅供格式參考，不代表本次答案）：\n' +
+        '[{"dep":"TPE","arr":"SEA","mkt":"AS","op":"JX","flt":"7210","date":"28SEP"}]';
+
+      sample.json(prompt, {images: files, modelTier: "default", cache: false})
+        .then(function(data){
+          if(!Array.isArray(data) || !data.length){
+            setStatus("未能從圖片中辨識出任何航段，請確認截圖清晰完整，或改為手動輸入。","err");
+            return;
+          }
+          segBody.innerHTML = "";
+          data.forEach(function(row){
+            addSegRow({
+              dep: String(row.dep||"").toUpperCase().slice(0,4),
+              arr: String(row.arr||"").toUpperCase().slice(0,4),
+              mkt: String(row.mkt||"").toUpperCase().slice(0,3),
+              op: String(row.op||"").toUpperCase().slice(0,3),
+              flt: String(row.flt||""),
+              date: String(row.date||"")
+            });
+          });
+          recompute();
+          setStatus("已辨識出 "+data.length+" 個航段並帶入下方表格 —— 請逐欄核對是否正確，AI 判讀可能有誤。","ok");
+        })
+        .catch(function(e){
+          var code = e && e.code;
+          var msgs = {
+            not_granted:"此工作區未開放使用 AI 辨識功能。",
+            sampling_disabled:"此帳號無法使用 AI 辨識功能。",
+            images_unavailable:"此檢視環境不支援圖片辨識，請手動輸入。",
+            image_rejected:"圖片格式不支援或檔案過大，請換一張截圖再試。",
+            rate_limited:"目前請求量過大，請稍後再試一次。",
+            invalid_json:"AI 回覆的格式無法解析，請重新整理後再試一次。",
+            refused:"AI 拒絕處理此圖片，請確認截圖內容或改為手動輸入。",
+            empty_completion:"AI 未能產生辨識結果，請換一張較清晰的截圖再試。"
+          };
+          setStatus(msgs[code] || "辨識時發生問題，請稍後再試或改為手動輸入。","err");
+        })
+        .finally(function(){ goBtn.disabled = false; });
+    });
+  })();
+
+  // ---------- Reference-screenshot lightbox (click any .rule-shot image to enlarge) ----------
+  // Uses an in-page overlay rather than opening the data: URI directly — browsers
+  // (Chrome in particular) block top-level navigation to data: URLs from a link click,
+  // which is why an <a href="data:..."> approach silently failed to open anything.
+  (function(){
+    var lightbox = document.getElementById("imgLightbox");
+    var lightboxImg = document.getElementById("lightboxImg");
+    var closeBtn = document.querySelector(".lightbox-close");
+    function openLightbox(src, alt){
+      lightboxImg.src = src;
+      lightboxImg.alt = alt || "";
+      lightbox.hidden = false;
+    }
+    function closeLightbox(){
+      lightbox.hidden = true;
+      lightboxImg.src = "";
+    }
+    document.addEventListener("click", function(e){
+      var img = e.target.closest(".rule-shot img");
+      if(img){ openLightbox(img.src, img.alt); return; }
+      if(!lightbox.hidden && (e.target === lightbox || e.target === lightboxImg || e.target === closeBtn)){ closeLightbox(); }
+    });
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && !lightbox.hidden) closeLightbox();
+    });
+  })();
+
+  // init — 航段表預設空白（無範例資料），直接進入編輯模式方便手動輸入或貼上文字。
+  renderRules();
+  setSegLocked(false);
+  recompute();
+})();
+</script>
+</html>
