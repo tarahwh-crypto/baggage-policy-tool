@@ -1269,7 +1269,7 @@
     }
 
     goBtn.addEventListener("click", function(){
-      var fi = document.getElementById("ocrLiteFile"); if(fi && fi.files && fi.files.length){ document.getElementById("ocrLiteGo").click(); return; }      var text = parseText.value;
+      var fi = document.getElementById("ocrLiteFile"); if(fi && fi.files && fi.files.length){ document.getElementById("ocrLiteGo").click(); try{ fi.value = ""; }catch(err){} return; }      var text = parseText.value;
       if(!text || !text.trim()){ setStatus("請先貼上行程文字。","err"); return; }
       var r = applyParsedText(text);
       setStatus(r.message, r.cls);
