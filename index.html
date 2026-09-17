@@ -946,6 +946,12 @@
       // "TPE-(JX*/EY)-AUH-(JX*/EY)-PRG" has FMC=JX but is still governed by
       // EY's row, because EY operates those segments.
       var partner = null, partnerCode = null;
+      // 涉美加：DOT 14 CFR 399.87 與加拿大 CTA 都是「整張票第一行銷承運人（FMC）的政策全程適用」，
+      // 因此規則表取 FMC 該公司那一列，不因某一段出現其他夥伴而改用夥伴規則。
+      if(touchesUS && fmc && fmc.carrier && findRule(fmc.carrier)){
+        partner = findRule(fmc.carrier); partnerCode = fmc.carrier;
+        traceItems.push({label:"涉美加：以整張票 FMC 規則為準", html:'行程涉及美國／加拿大，整張票適用 FMC <b>'+fmc.carrier+'</b> 的行李政策，故規則表取 <b>'+fmc.carrier+'</b> 該列；即使其他航段由別家承運，也不改用該夥伴的規則。'});
+      }
       for(var pi=0; pi<csegs.length && !partner; pi++){
         var ps = csegs[pi];
         if(ps.mkt && ps.mkt!=="JX" && findRule(ps.mkt)){ partner = findRule(ps.mkt); partnerCode = ps.mkt; break; }
