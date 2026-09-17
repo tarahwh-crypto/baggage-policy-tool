@@ -1111,6 +1111,8 @@
       var line = raw.trim();
       if(!line) return;
       var lineNo = i+1;
+      // 表格標題列（截圖 OCR 常會抽出欄位名稱）直接略過，不列為解析失敗。
+      if(/^#/.test(line) || /DEP\.?\s*LOCATION/i.test(line) || /ARR\.?\s*LOCATION/i.test(line)) return;
       var tokens = line.split(/\s+/).filter(Boolean).map(function(t){ return t.toUpperCase(); });
       if(/^\d{1,3}$/.test(tokens[0]) && tokens.length >= 5){ tokens.shift(); }
       if(tokens.length < 4){
@@ -1124,7 +1126,8 @@
       var arr = tokens[idx];
       if(!/^[A-Z]{3}$/.test(arr)){ failed.push({line:lineNo, reason:"無法辨識目的地機場代碼"}); return; }
       idx++;
-      if(idx<tokens.length && /^[A-Z]$/.test(tokens[idx])){ idx++; } // optional stop/connection indicator
+      // 到達地停留標記（O／X）；承運人代碼至少 2 碼，故此位置若是單一字元或純符號，一律視為標記或 OCR 雜訊（如 0、-、[¢]）略過。
+      if(idx<tokens.length && (/^[A-Z0-9]$/.test(tokens[idx]) || /^[^A-Z0-9]{1,3}$/.test(tokens[idx]))){ idx++; }
       if(idx>=tokens.length || !/^[A-Z0-9]{2,3}$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識行銷承運人代碼"}); return; }
       var mkt = tokens[idx]; idx++;
       if(idx>=tokens.length || !/^\d{1,5}[A-Z]?$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識航班號"}); return; }
