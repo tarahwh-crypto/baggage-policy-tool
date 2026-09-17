@@ -1155,7 +1155,7 @@
       var stopGuess = /^(0|Q|\(\)|\[\])$/.test(stopMark);
       if(stopGuess) stopMark = "O";
       var stopUnclear = stopGuess || (!!stopMark && !/^[OX]$/.test(stopMark) && !/^[-–—.]$/.test(stopMark));
-      var combo = (tokens[idx]||"").match(/^([A-Z][A-Z0-9]{1,2})(\d{2,4}[A-Z]?)$/); // AA1399；OCR 多讀一字母的 JIX7521 也一併拆開
+      var combo = (tokens[idx]||"").match(/^([A-Z][A-Z0-9]{1,2}?)(\d{2,4}[A-Z]?)$/); // AA1399；OCR 多讀一字母的 JIX7521 也一併拆開
       if(combo){ tokens.splice(idx, 1, combo[1], combo[2]); } // AA1399 → AA + 1399，後續欄位判讀維持不變
       // 承運人／航班號讀不出來時不整列丟棄：該欄留空帶入，讓航段表以紅框標示待補，避免整段行程消失。
       var needFix = false;
