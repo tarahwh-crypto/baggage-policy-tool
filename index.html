@@ -1084,6 +1084,10 @@
         var dn = document.createElement("div");
         dn.className = "diverge-note";
         dn.textContent = "⚠ 本"+(multi?"段":"行程")+"「免費行李額度」與「超額行李費率」適用不同承運人，請分開查表，勿混用同一家費率表。";
+        // 額度 EY／費率 JX 的組合，計重制下容易誤用件數費率，於此明確提示計算方式。
+        if(result.allocOut.carrier === "EY" && result.feeOut.carrier === "JX"){
+          dn.textContent += "　額度 EY、費率 JX：若本行程適用計重制，請先加總旅客託運行李「總重量」與 EY 免費額度比較，超重部分再依 JX 單件超重費率計收，勿逐件分開計算。";
+        }
         resultsContainer.appendChild(dn);
       }
 
