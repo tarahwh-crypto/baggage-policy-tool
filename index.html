@@ -866,7 +866,7 @@
 
   // Resolve one output (alloc or fee) given the chosen mode, reusing an
   // already-computed MSC/FOC result where possible so we don't recompute twice.
-  function resolveByMode(mode, fmc, mscMkt, mscOp, focResult){
+  function resolveByMode(mode, fmc, mscMkt, mscOp, focResult, hasCodeshare){
     if(mode==="fmc") return {carrier:fmc.carrier, basisFrag:"適用 FMC（"+fmc.carrier+"）自家政策"};
     if(mode==="msc-mkt") return mscMkt
       ? {carrier:mscMkt.carrier, basisFrag:"改採 MSC，"+mscMkt.note+"之判定結果"}
@@ -1001,8 +1001,9 @@
         }
       }
 
-      var a = resolveByMode(allocMode, fmc, mscMktResult, mscOpResult, focResult);
-      var f = resolveByMode(feeMode, fmc, mscMktResult, mscOpResult, focResult);
+      var hasCodeshare = csegs.some(function(s){ return s.op && s.mkt && s.op !== s.mkt; });
+      var a = resolveByMode(allocMode, fmc, mscMktResult, mscOpResult, focResult, hasCodeshare);
+      var f = resolveByMode(feeMode, fmc, mscMktResult, mscOpResult, focResult, hasCodeshare);
       allocOut = {carrier:a.carrier, note:a.basisFrag, confirmed:confirmed};
       feeOut = {carrier:f.carrier, note:f.basisFrag, confirmed:confirmed};
     } else {
