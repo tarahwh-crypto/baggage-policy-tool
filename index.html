@@ -874,6 +874,10 @@
     if(mode==="msc-op") return mscOp
       ? {carrier:mscOp.carrier, basisFrag:"改採 MSC（該公司內規取實際承運人），"+mscOp.note+"之判定結果"}
       : {carrier:null, basisFrag:"無法計算 MSC"};
+    // 「依第一段實際承運人」是 codeshare 專用規定；本段若無任何 codeshare 航段（行銷＝實際），回到 MSC 判定。
+    if(mode==="foc" && !hasCodeshare) return mscMkt
+      ? {carrier:mscMkt.carrier, basisFrag:"本段無 codeshare 航段，不適用「依第一段實際承運人」之 codeshare 規定，改依 MSC，"+mscMkt.note+"之判定結果"}
+      : {carrier:null, basisFrag:"無法計算 MSC"};
     if(mode==="foc") return focResult
       ? {carrier:focResult.carrier, basisFrag:"改採「第一家實際承運人」（行程第一段"+(focResult.usedOperating?"實際承運人":"行銷承運人，未填實際承運人故視為相同")+"）"}
       : {carrier:null, basisFrag:"無法判定第一家實際承運人"};
