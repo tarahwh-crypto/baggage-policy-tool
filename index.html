@@ -1216,7 +1216,7 @@
         var dt = tokens[k].replace(/[^A-Z0-9]/g, "");
         if(/^\d{1,2}[A-Z0]{3}$/.test(dt)){ date = dt.slice(0, dt.length-3) + dt.slice(-3).replace(/0/g, "O"); idx = k+1; break; }
       }
-      rows.push({dep:dep, arr:arr, mkt:mkt, op:op, flt:flt, date:date, brk:(stopMark === "O"), stopUnclear:stopUnclear, needsCheck:needFix});
+      rows.push({dep:dep, arr:arr, mkt:mkt, op:op, flt:flt, date:date, brk:(stopMark === "O"), stopUnclear:stopUnclear, needsCheck:needFix, stopSeen:!!stopMark});
     });
     return {rows:rows, failed:failed};
   }
@@ -1315,9 +1315,13 @@
     setSegLocked(true); // 帶入結果 → 預設鎖定，不完整欄位以紅框標示
     recompute();
     var brkCount = result.rows.filter(function(r){ return r.brk; }).length;
+    // 來源表格有 Stop 欄（其他航段讀得到標記）時，讀不到標記的那幾段可能是 OCR 漏字而不是空白，一律提示人工確認。
+    if(result.rows.some(function(r){ return r.stopSeen; })){
+      result.rows.forEach(function(r){ if(!r.stopSeen) r.stopUnclear = true; });
+    }
     var unclearCount = result.rows.filter(function(r){ return r.stopUnclear; }).length;
     var fixCount = result.rows.filter(function(r){ return r.needsCheck; }).length;
-    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "") + (unclearCount ? "；有 "+unclearCount+" 段的停留標記為 OCR 推測（例如把 O 讀成 0），請確認「到達地停留（斷點）」勾選是否正確" : "") + (fixCount ? "；有 "+fixCount+" 段的承運人／航班號為 OCR 推測或無法辨識（空白欄已用紅框標示），請點「編輯航段」核對補齊後重新判定" : "");
+    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "") + (unclearCount ? "；有 "+unclearCount+" 段的停留標記是 OCR 推測或未讀到（O 常被讀成 0，或整格漏讀），請務必核對「到達地停留（斷點）」勾選是否正確" : "") + (fixCount ? "；有 "+fixCount+" 段的承運人／航班號為 OCR 推測或無法辨識（空白欄已用紅框標示），請點「編輯航段」核對補齊後重新判定" : "");
     if(result.failed.length){
       var lineNos = result.failed.map(function(f){ return f.line; }).join("、");
       return {ok:true, cls:"err", message: msg+"，另有第 "+lineNos+" 行無法辨識（下方已用紅框標示），請點「編輯航段」解鎖後手動核對或補充。"};
