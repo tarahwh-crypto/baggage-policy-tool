@@ -410,9 +410,9 @@
           <span class="badge confirmed">建議優先使用</span>
         </summary>
         <div class="ocr-body">
-          <p class="ocr-desc">從訂位／CM 系統選取整段行程文字複製、貼到下方框內即可自動拆解成航段（支援兩種格式，見框內範例）；也可以把截圖直接<b>貼上</b>（<span class="mono">Ctrl+V</span>／<span class="mono">Cmd+V</span>）或<b>拖曳</b>到框內，或用「上傳截圖檔案」，會自動用 OCR 辨識文字後嘗試判定。</p>
+          <p class="ocr-desc">從訂位／CM 系統選取整段行程文字複製、貼到下方框內即可自動拆解成航段（支援三種格式，見框內範例）；也可以把截圖直接<b>貼上</b>（<span class="mono">Ctrl+V</span>／<span class="mono">Cmd+V</span>）或<b>拖曳</b>到框內，或用「上傳截圖檔案」，會自動用 OCR 辨識文字後嘗試判定。</p>
           <p class="ocr-desc">截圖辨識為免費、非 AI 的傳統文字辨識，對承運人代碼／航班號／日期常有誤判（如 0/O、1/I、S/5）。<b>能複製到文字時請優先貼文字</b>；用截圖時務必核對辨識結果再送出。</p>
-          <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，或直接貼上／拖曳截圖到這裡（Ctrl+V／Cmd+V，或拖放圖檔）。&#10;文字支援兩種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA"></textarea>
+          <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，或直接貼上／拖曳截圖到這裡（Ctrl+V／Cmd+V，或拖放圖檔）。&#10;文字支援三種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA&#10;&#10;或時刻表／艙位顯示格式（可含或不含前面的序號）：&#10;7  CX 472 S 15SEP 2 HKGTPE&#10;8  JX 032 N 15SEP 2 TPESEA"></textarea>
           <div class="ocr-row">
             <button id="parseGo" class="primary">解析文字並帶入</button>
             <span class="ocr-or">或上傳截圖檔案：</span>
@@ -1229,9 +1229,9 @@
     return /^[A-Z0-9]{2}\s*\d{2,5}/.test(m[2].trim());
   }
 
-  function parseItineraryText(text){
+  function looksLikeScheduleLine(upper){ return /^(?:\d{1,3}\s+)?[A-Z0-9]{2,3}\s+\d{1,4}[A-Z]?\s+[A-Z]\s+\d{1,2}[A-Z]{3}\s+(?:\d\s+)?[A-Z]{6}(\s|$)/.test(upper); } function parseScheduleLineFormat(lines){ var rows=[]; var failed=[]; var re=/^(?:\d{1,3}\s+)?([A-Z0-9]{2,3})\s+(\d{1,4}[A-Z]?)\s+[A-Z]\s+(\d{1,2}[A-Z]{3})\s+(?:\d\s+)?([A-Z]{3})([A-Z]{3})\b/; lines.forEach(function(raw,i){ var line=raw.trim(); if(!line) return; var lineNo=i+1; var upper=line.toUpperCase(); var m=upper.match(re); if(!m){ failed.push({line:lineNo, reason:"無法辨識此行格式（非「承運人 航班號 艙等 日期 星期 出發地目的地(6碼相連)」格式，如「CX 472 S 15SEP 2 HKGTPE」）"}); return; } rows.push({dep:m[4], arr:m[5], mkt:m[1], op:"", flt:m[2], date:m[3], brk:false}); }); return {rows:rows, failed:failed}; } function parseItineraryText(text){
     var lines = String(text||"").split(/\n/);
-    var isChainFormat = lines.some(function(raw){
+    var isScheduleFormat = lines.some(function(raw){ var t=raw.trim(); return t && looksLikeScheduleLine(t.toUpperCase()); }); if(isScheduleFormat) return parseScheduleLineFormat(lines); var isChainFormat = lines.some(function(raw){
       var t = raw.trim();
       return t && looksLikeChainLine(t.toUpperCase());
     });
