@@ -904,7 +904,7 @@
   // ---------- Core determination for ONE journey (a run of segments with no
   // stopover break in between). Returns trace items as plain data (not DOM
   // nodes yet) so recompute() can render one journey or many identically. ----------
-  function determineJourney(csegs){
+  function determineJourney(csegs, ticketCsegs){
     var traceItems = [];
     var unknown = [];
     csegs.forEach(function(s){
@@ -921,17 +921,20 @@
     traceItems.push({label:"起訖點判斷", html:
       "行程中" + (touchesUS?"<b>含美國／加拿大機場</b>":"<b>未含美國／加拿大機場</b>") +
       "。" + (touchesUS
-        ? '依 <span class="cite">14 CFR § 399.87</span> 及 CTA 對應規則，DOT 預設以行程第一段行銷承運人（FMC）整段適用，但各承運人可能於 interline 協議中另行約定。'
+        ? '依 <span class="cite">14 CFR § 399.87</span> 及 CTA 對應規則，DOT 預設以「整張機票」第一個航段的行銷承運人（FMC）全程適用（不因停留分段而重算），但各承運人可能於 interline 協議中另行約定。'
         : "未觸及美加，DOT／CTA 管轄不適用，預設以 IATA MSC 基準判定，但各承運人仍可能另有約定。")
     });
 
-    var fmc = computeFMC(csegs);
+    // FMC 依 14 CFR 399.87／CTA：看「整張機票」的第一個航段，停留分段不重新計算；
+    // MSC（IATA Res 302）才是分段各自判定。
+    var fmcSegs = (ticketCsegs && ticketCsegs.length) ? ticketCsegs : csegs;
+    var fmc = computeFMC(fmcSegs);
     var allocOut = {carrier:null, note:"", confirmed:true};
     var feeOut = {carrier:null, note:"", confirmed:true};
 
     if(fmc && fmc.carrier){
       traceItems.push({label:"第一行銷承運人（FMC）", html:
-        "行程第一段為 " + fmt(csegs[0],0) + "，行銷承運人 <b>"+fmc.carrier+"</b> 即為 FMC（機械式定義：行程第一段的行銷承運人代碼）。"
+        "整張票第一段為 " + fmt(fmcSegs[0],0) + "，行銷承運人 <b>"+fmc.carrier+"</b> 即為 FMC（機械式定義：整張機票第一個航段的行銷承運人代碼；有停留分段時不重新計算，全票沿用同一個 FMC）。"
       });
 
       // Which interline partner's rule applies is NOT necessarily "whoever is
@@ -1047,9 +1050,10 @@
     var multi = journeysRaw.length > 1;
     var allUnknown = [];
 
+    var ticketCsegs = raw.map(classifySeg); // 整張票的航段（FMC 用，停留分段不重算）
     journeysRaw.forEach(function(rawSegs, ji){
       var csegs = rawSegs.map(classifySeg);
-      var result = determineJourney(csegs);
+      var result = determineJourney(csegs, ticketCsegs);
       result.unknown.forEach(function(code){ if(allUnknown.indexOf(code)===-1) allUnknown.push(code); });
 
       if(multi){
