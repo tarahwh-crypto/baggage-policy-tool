@@ -407,17 +407,17 @@
       <details open>
         <summary class="ocr-summary">
           <span class="ocr-title">貼上行程文字，或貼上／上傳截圖</span>
-          <span class="badge confirmed">建議優先使用</span>
+           
         </summary>
         <div class="ocr-body">
           <p class="ocr-desc">從訂位／CM 系統選取整段行程文字複製、貼到下方框內即可自動拆解成航段（支援三種格式，見框內範例）；也可以把截圖直接<b>貼上</b>（<span class="mono">Ctrl+V</span>／<span class="mono">Cmd+V</span>）或<b>拖曳</b>到框內，或用「上傳截圖檔案」，會自動用 OCR 辨識文字後嘗試判定。</p>
           <p class="ocr-desc">截圖辨識為免費、非 AI 的傳統文字辨識，對承運人代碼／航班號／日期常有誤判（如 0/O、1/I、S/5）。<b>能複製到文字時請優先貼文字</b>；用截圖時務必核對辨識結果再送出。</p>
           <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，或直接貼上／拖曳截圖到這裡（Ctrl+V／Cmd+V，或拖放圖檔）。&#10;文字支援三種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA&#10;&#10;或時刻表／艙位顯示格式（可含或不含前面的序號）：&#10;7  CX 472 S 15SEP 2 HKGTPE&#10;8  JX 032 N 15SEP 2 TPESEA"></textarea>
           <div class="ocr-row">
-            <button id="parseGo" class="primary">解析文字並帶入</button>
+            <button id="parseGo" class="primary">解析並帶入</button>
             <span class="ocr-or">或上傳截圖檔案：</span>
             <input type="file" id="ocrLiteFile" accept="image/*">
-            <button id="ocrLiteGo">辨識並帶入（免 AI OCR）</button>
+            <button id="ocrLiteGo" hidden>辨識並帶入（免 AI OCR）</button>
           </div>
           <div class="ocr-status" id="parseStatus"></div>
         </div>
@@ -1269,7 +1269,7 @@
     }
 
     goBtn.addEventListener("click", function(){
-      var text = parseText.value;
+      var fi = document.getElementById("ocrLiteFile"); if(fi && fi.files && fi.files.length){ document.getElementById("ocrLiteGo").click(); return; }      var text = parseText.value;
       if(!text || !text.trim()){ setStatus("請先貼上行程文字。","err"); return; }
       var r = applyParsedText(text);
       setStatus(r.message, r.cls);
@@ -1294,7 +1294,7 @@
   (function initOcrLite(){
     var fileInput = document.getElementById("ocrLiteFile");
     var goBtn = document.getElementById("ocrLiteGo");
-    // 與「解析文字並帶入」共用同一列狀態文字（方式 A 已合併文字／截圖兩種輸入）。
+    // 與「解析並帶入」共用同一列狀態文字（方式 A 已合併文字／截圖兩種輸入）。
     var status = document.getElementById("parseStatus");
     var parseTextEl = document.getElementById("parseText");
 
@@ -1325,8 +1325,8 @@
         }
         parseTextEl.value = text.trim();
         var r = applyParsedText(text);
-        var prefix = r.ok ? "OCR 辨識完成，已直接完成判定。" : "OCR 已抽出文字，但無法自動解析出航段，請於上方文字框核對修正後按「解析文字並帶入」。";
-        var suffix = r.ok ? "（OCR 常見誤判如 0/O、1/I、B/8，請核對上方文字與下方判定結果；如需修正，改好文字後按「解析文字並帶入」即可重新判定。）" : "";
+        var prefix = r.ok ? "OCR 辨識完成，已直接完成判定。" : "OCR 已抽出文字，但無法自動解析出航段，請於上方文字框核對修正後按「解析並帶入」。";
+        var suffix = r.ok ? "（OCR 常見誤判如 0/O、1/I、B/8，請核對上方文字與下方判定結果；如需修正，改好文字後按「解析並帶入」即可重新判定。）" : "";
         setStatus(prefix + (r.ok ? " " + r.message : "") + suffix, r.cls);
       }).catch(function(){
         setStatus("無法載入或執行 OCR 引擎，請確認網路連線，或改用「貼上行程文字」。","err");
