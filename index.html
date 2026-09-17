@@ -218,6 +218,7 @@
   .ocr-row input[type=file]{
     font-size:12.5px;color:var(--ink);max-width:100%;
   }
+  .ocr-row .ocr-or{font-size:12.5px;color:var(--ink-dim);}
   .ocr-status{font-size:12.5px;color:var(--ink-dim);margin-top:8px;min-height:1em;}
   .ocr-status.err{color:var(--bad);}
   .ocr-status.ok{color:var(--good);}
@@ -229,6 +230,7 @@
     padding:9px 10px;color:var(--ink);margin-bottom:10px;
   }
   .parse-textarea:focus{outline:2px solid var(--focus);outline-offset:1px;}
+  .parse-textarea.drag-over{outline:2px dashed var(--accent);outline-offset:1px;}
 
   .row-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
   button{
@@ -402,35 +404,22 @@
     <p class="step-desc">依「原始開票行程」順序輸入每一航段。行銷承運人（Marketing）請填實際開票所顯示的代碼；若該航段為 codeshare 由其他公司實際飛航，請填「實際承運人 Operating」，留空表示與行銷承運人相同。</p>
 
     <div class="ocr-box parse-box">
-      <details>
+      <details open>
         <summary class="ocr-summary">
-          <span class="ocr-title">方式 A：貼上行程文字（規則比對，不需 AI，離線可用）</span>
+          <span class="ocr-title">方式 A：貼上行程文字，或貼上／上傳截圖</span>
           <span class="badge confirmed">建議優先使用</span>
         </summary>
         <div class="ocr-body">
-          <p class="ocr-desc">從訂位／CM 系統畫面選取整段行程文字複製、貼到下方，工具會自動判斷並拆解成航段帶入表格，支援兩種格式：①簡化格式，每行一段（出發＋到達），如 <span class="mono">1 TPE SEA X AS 7210 JX O 28SEP</span>；②訂位系統逐點格式，每行僅一個地點（前面帶 O=停留／X=轉機），最後單獨一行列出最終到達地，如 <span class="mono">1 OOKA EY5182JX Q 15SEP1550 OK ...</span>。第②種格式中若某地點標示 O（實際停留，非純轉機），行程會自動從該處分成不同段，去程／回程分開判定。此方式最準確，且不論放在 claude.ai 或 GitHub Pages 都能用。</p>
-          <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，支援兩種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA"></textarea>
+          <p class="ocr-desc">從訂位／CM 系統選取整段行程文字複製、貼到下方框內即可自動拆解成航段（支援兩種格式，見框內範例）；也可以把截圖直接<b>貼上</b>（<span class="mono">Ctrl+V</span>／<span class="mono">Cmd+V</span>）或<b>拖曳</b>到框內，或用「上傳截圖檔案」，會自動用 OCR 辨識文字後嘗試判定。</p>
+          <p class="ocr-desc">截圖辨識為免費、非 AI 的傳統文字辨識，對承運人代碼／航班號／日期常有誤判（如 0/O、1/I、S/5）。<b>能複製到文字時請優先貼文字</b>；用截圖時務必核對辨識結果再送出。</p>
+          <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，或直接貼上／拖曳截圖到這裡（Ctrl+V／Cmd+V，或拖放圖檔）。&#10;文字支援兩種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA"></textarea>
           <div class="ocr-row">
             <button id="parseGo" class="primary">解析文字並帶入</button>
+            <span class="ocr-or">或上傳截圖檔案：</span>
+            <input type="file" id="ocrLiteFile" accept="image/*">
+            <button id="ocrLiteGo">辨識並帶入（免 AI OCR）</button>
           </div>
           <div class="ocr-status" id="parseStatus"></div>
-        </div>
-      </details>
-    </div>
-
-    <div class="ocr-box parse-box">
-      <details>
-        <summary class="ocr-summary">
-          <span class="ocr-title">方式 B：上傳截圖，用 OCR 抽出文字（傳統文字辨識，不需 AI）</span>
-          <span class="badge unconfirmed">誤判率高，僅在真的無法複製文字時才用</span>
-        </summary>
-        <div class="ocr-body">
-          <p class="ocr-desc">此方式為免費、非 AI 的傳統文字辨識（Tesseract.js），實測對航空代碼／航班號／日期這類「字母數字混排」的內容誤判率偏高（例如 O/0、I/1/9、S/5 容易互相認錯），即使截圖清晰也常出錯，這是此類引擎的先天限制，並非圖片品質問題。因此<b>能複製到文字時請一律用方式 A</b>；方式 B 僅建議在完全拿不到可複製文字（例如只有一張照片）時，用來抓出「大致」文字再手動修正——辨識完會自動嘗試判定，但務必逐字核對承運人代碼與日期是否正確再送出。</p>
-          <div class="ocr-row">
-            <input type="file" id="ocrLiteFile" accept="image/*">
-            <button id="ocrLiteGo">OCR 抽字（免 AI）</button>
-          </div>
-          <div class="ocr-status" id="ocrLiteStatus"></div>
         </div>
       </details>
     </div>
@@ -438,7 +427,7 @@
     <div class="ocr-box" id="ocrBox" hidden>
       <details>
         <summary class="ocr-summary">
-          <span class="ocr-title">方式 C：AI 辨識截圖（僅限 claude.ai 內開啟時可用）</span>
+          <span class="ocr-title">方式 B：AI 辨識截圖（僅限 claude.ai 內開啟時可用）</span>
           <span class="badge unconfirmed">AI 辨識，請核對</span>
         </summary>
         <div class="ocr-body">
@@ -455,7 +444,7 @@
     <div class="seg-result-head">
       <div>
         <div class="seg-result-title">帶入結果（航段表）</div>
-        <div class="seg-result-sub">不論用上面哪種方式帶入，或手動輸入，結果都會顯示在下方。用「方式 A／B」貼上文字解析帶入後，欄位會自動反灰鎖定；有紅框表示該欄未填，請點「編輯航段」解鎖後修正或手動輸入。</div>
+        <div class="seg-result-sub">不論用上面哪種方式帶入，或手動輸入，結果都會顯示在下方。用「方式 A」貼上文字或截圖解析帶入後，欄位會自動反灰鎖定；有紅框表示該欄未填，請點「編輯航段」解鎖後修正或手動輸入。</div>
       </div>
       <div class="seg-lock-controls">
         <button id="toggleEditSeg" class="ghost">✎ 編輯航段</button>
@@ -677,7 +666,7 @@
   var segBody = document.getElementById("segBody");
   var rowSeq = 0;
   // 航段表初始為空、且為編輯模式，方便直接手動輸入或貼上文字；
-  // 用「方式 A／B」解析文字帶入結果後，會自動反灰鎖定，避免場站同事誤改判定用的原始資料；
+  // 用「方式 A」（文字或截圖）解析文字帶入結果後，會自動反灰鎖定，避免場站同事誤改判定用的原始資料；
   // 必填欄位（出發地／目的地／行銷承運人）留空時，不論鎖定與否都用紅框標示，
   // 使用者需點「編輯航段」解鎖後才能修正或新增／刪除航段。
   var segLocked = false;
@@ -1249,7 +1238,7 @@
     return isChainFormat ? parseChainFormat(lines) : parseSimpleFormat(lines);
   }
 
-  // 共用：把行程文字解析並直接帶入航段表、完成判定（方式 A 手動觸發、方式 B OCR 完成後自動觸發皆呼叫此函式）。
+  // 共用：把行程文字解析並直接帶入航段表、完成判定（方式 A 文字手動觸發、方式 A 內建 OCR〔貼上／拖曳／上傳截圖〕完成後自動觸發、方式 B AI 辨識完成後自動觸發皆呼叫此函式）。
   function applyParsedText(text){
     var result = parseItineraryText(text);
     if(!result.rows.length){
@@ -1305,7 +1294,8 @@
   (function initOcrLite(){
     var fileInput = document.getElementById("ocrLiteFile");
     var goBtn = document.getElementById("ocrLiteGo");
-    var status = document.getElementById("ocrLiteStatus");
+    // 與「解析文字並帶入」共用同一列狀態文字（方式 A 已合併文字／截圖兩種輸入）。
+    var status = document.getElementById("parseStatus");
     var parseTextEl = document.getElementById("parseText");
 
     function setStatus(text, cls){
@@ -1313,12 +1303,17 @@
       status.className = "ocr-status" + (cls? " "+cls : "");
     }
 
-    goBtn.addEventListener("click", function(){
-      var files = fileInput.files;
-      if(!files || !files.length){ setStatus("請先選擇一張截圖。","err"); return; }
-      var file = files[0];
+    function isImageFile(file){
+      return !!file && /^image\//.test(file.type || "");
+    }
+
+    function runOcrOnFile(file, sourcePrefix){
+      if(!isImageFile(file)){
+        setStatus("請貼上、拖曳或選擇一張圖片檔案（截圖）。","err");
+        return;
+      }
       goBtn.disabled = true;
-      setStatus("載入 OCR 引擎並辨識中，請稍候（首次使用可能需 10–30 秒）…");
+      setStatus((sourcePrefix||"") + "載入 OCR 引擎並辨識中，請稍候（首次使用可能需 10–30 秒）…");
 
       loadTesseract().then(function(Tesseract){
         return Tesseract.recognize(file, "eng");
@@ -1336,6 +1331,46 @@
       }).catch(function(){
         setStatus("無法載入或執行 OCR 引擎，請確認網路連線，或改用「貼上行程文字」。","err");
       }).finally(function(){ goBtn.disabled = false; });
+    }
+
+    // 上傳截圖檔案 → 按「辨識並帶入」。
+    goBtn.addEventListener("click", function(){
+      var files = fileInput.files;
+      if(!files || !files.length){ setStatus("請先選擇一張截圖。","err"); return; }
+      runOcrOnFile(files[0], "");
+    });
+
+    // 直接把截圖貼到文字框（Ctrl+V／Cmd+V）：偵測剪貼簿內容，若是圖片就自動送 OCR；
+    // 若是純文字，交給瀏覽器預設貼上行為即可（不影響原本「貼上行程文字」的用法）。
+    parseTextEl.addEventListener("paste", function(e){
+      var items = (e.clipboardData && e.clipboardData.items) || [];
+      for(var i=0; i<items.length; i++){
+        if(items[i].kind === "file" && /^image\//.test(items[i].type||"")){
+          var file = items[i].getAsFile();
+          if(file){
+            e.preventDefault();
+            runOcrOnFile(file, "已偵測到貼上的截圖，");
+          }
+          return;
+        }
+      }
+    });
+
+    // 把截圖檔案拖曳到文字框：同樣自動送 OCR。
+    parseTextEl.addEventListener("dragover", function(e){
+      e.preventDefault();
+      parseTextEl.classList.add("drag-over");
+    });
+    parseTextEl.addEventListener("dragleave", function(){
+      parseTextEl.classList.remove("drag-over");
+    });
+    parseTextEl.addEventListener("drop", function(e){
+      e.preventDefault();
+      parseTextEl.classList.remove("drag-over");
+      var files = (e.dataTransfer && e.dataTransfer.files) || [];
+      if(files.length && isImageFile(files[0])){
+        runOcrOnFile(files[0], "已偵測到拖放的截圖，");
+      }
     });
   })();
 
