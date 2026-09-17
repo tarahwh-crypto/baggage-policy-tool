@@ -1158,7 +1158,8 @@
       if(idx>=tokens.length || !/^\d{1,5}[A-Z]?$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識航班號"}); return; }
       var flt = tokens[idx]; idx++;
       var op = "";
-      if(idx<tokens.length && /^[A-Z0-9]{2,3}$/.test(tokens[idx]) && tokens[idx]!==mkt){ op = tokens[idx]; idx++; }
+      // 兩個相同字母（如艙等 V 被 OCR 讀成 Vv→VV）不是承運人代碼，不採為實際承運人。
+      if(idx<tokens.length && /^[A-Z0-9]{2,3}$/.test(tokens[idx]) && tokens[idx]!==mkt && !/^([A-Z])\1$/.test(tokens[idx])){ op = tokens[idx]; idx++; }
       if(idx<tokens.length && /^[A-Z]$/.test(tokens[idx])){ idx++; } // 艙等（選填）
       var date = "";
       // 日期改為往後掃描：OCR 可能在承運人／艙等欄留下雜訊（如 )X），逐欄比對會卡住而漏掉日期；
