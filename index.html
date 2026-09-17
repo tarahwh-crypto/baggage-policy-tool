@@ -1124,7 +1124,7 @@
       // 表格標題列（截圖 OCR 常會抽出欄位名稱）直接略過，不列為解析失敗。
       if(/^#/.test(line) || /DEP\.?\s*LOCATION/i.test(line) || /ARR\.?\s*LOCATION/i.test(line)) return;
       // ARNK（surface sector，旅客自行地面移動）不是搭機航段，略過不算失敗。
-      if(/\bARNK\b/i.test(line)) return;
+      if(/\bARNK\b/i.test(line)){ if(rows.length) rows[rows.length-1].brk = true; return; } // 地面段代表行程在此中斷，前一航段的到達地視為斷點
       var tokens = line.split(/\s+/).filter(Boolean).map(function(t){ return t.toUpperCase(); });
       if(/^\d{1,3}$/.test(tokens[0]) && tokens.length >= 5){ tokens.shift(); }
       if(tokens.length < 3){
