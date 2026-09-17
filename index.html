@@ -424,23 +424,6 @@
       </details>
     </div>
 
-    <div class="ocr-box" id="ocrBox" hidden>
-      <details>
-        <summary class="ocr-summary">
-          <span class="ocr-title">方式 B：AI 辨識截圖（僅限 claude.ai 內開啟時可用）</span>
-          <span class="badge unconfirmed">AI 辨識，請核對</span>
-        </summary>
-        <div class="ocr-body">
-          <p class="ocr-desc">由 Claude 直接讀取截圖內容判讀行程，準確度較高，但僅在 claude.ai 開啟此頁面時才會出現這個區塊（GitHub Pages 版本會自動隱藏）。仍請逐欄核對再使用，AI 判讀可能誤判相近字母數字（如 0/O、1/I、B/8）。</p>
-          <div class="ocr-row">
-            <input type="file" id="ocrFile" accept="image/*" multiple>
-            <button id="ocrGo" class="primary">辨識並帶入行程</button>
-          </div>
-          <div class="ocr-status" id="ocrStatus"></div>
-        </div>
-      </details>
-    </div>
-
     <div class="seg-result-head">
       <div>
         <div class="seg-result-title">帶入結果（航段表）</div>
@@ -1238,7 +1221,7 @@
     return isChainFormat ? parseChainFormat(lines) : parseSimpleFormat(lines);
   }
 
-  // 共用：把行程文字解析並直接帶入航段表、完成判定（方式 A 文字手動觸發、方式 A 內建 OCR〔貼上／拖曳／上傳截圖〕完成後自動觸發、方式 B AI 辨識完成後自動觸發皆呼叫此函式）。
+  // 共用：把行程文字解析並直接帶入航段表、完成判定（文字手動觸發、內建 OCR〔貼上／拖曳／上傳截圖〕完成後自動觸發皆呼叫此函式）。
   function applyParsedText(text){
     var result = parseItineraryText(text);
     if(!result.rows.length){
@@ -1371,90 +1354,6 @@
       if(files.length && isImageFile(files[0])){
         runOcrOnFile(files[0], "已偵測到拖放的截圖，");
       }
-    });
-  })();
-
-  // ---------- Screenshot recognition (optional, via Claude) ----------
-  (function initOCR(){
-    var box = document.getElementById("ocrBox");
-    var fileInput = document.getElementById("ocrFile");
-    var goBtn = document.getElementById("ocrGo");
-    var status = document.getElementById("ocrStatus");
-    var sample = null;
-
-    function setStatus(text, cls){
-      status.textContent = text || "";
-      status.className = "ocr-status" + (cls? " "+cls : "");
-    }
-
-    if(!window.claude || typeof window.claude.use !== "function"){ return; }
-
-    window.claude.use("sample").then(function(s){
-      if(!s){ return; }
-      sample = s;
-      return sample.limits().catch(function(){ return null; });
-    }).then(function(limits){
-      if(!sample || !limits || !limits.images){ return; }
-      box.hidden = false;
-      if(limits.images.mediaTypes){ fileInput.accept = limits.images.mediaTypes.join(","); }
-    }).catch(function(){ /* sample unavailable — keep manual entry only */ });
-
-    goBtn.addEventListener("click", function(){
-      if(!sample){ setStatus("此檢視環境無法使用辨識功能，請手動輸入。","err"); return; }
-      var files = fileInput.files;
-      if(!files || !files.length){ setStatus("請先選擇一張或多張機票／行程截圖。","err"); return; }
-
-      goBtn.disabled = true;
-      setStatus("辨識中，請稍候（約需 10–60 秒）…");
-
-      var prompt = "以下是一張或多張航空公司訂位／開票系統的行程截圖。請仔細判讀畫面上的行程表格，" +
-        "依「出發地→目的地」順序列出每一個航段，並嚴格只回覆一個 JSON 陣列，不要有其他文字或說明。\n\n" +
-        "每個元素代表一個航段，欄位如下：\n" +
-        '- dep：出發地機場三字代碼（大寫）\n' +
-        '- arr：目的地機場三字代碼（大寫）\n' +
-        '- mkt：行銷承運人二字代碼（大寫）。畫面「航班」欄通常顯示如 "AS 7210 JX"，其中前面的字母（AS）是行銷承運人\n' +
-        '- op：實際承運人二字代碼（大寫）。若同一格內在行銷承運人與航班號之後另外標示一個航空公司代碼（如 "AS 7210 JX" 的 JX），代表該段由不同公司實際飛航，填入該代碼；若沒有另外標示，填空字串 ""\n' +
-        '- flt：航班號碼（僅數字部分，字串）\n' +
-        '- date：畫面顯示的日期（字串，如 "28SEP"），若無則填空字串\n\n' +
-        '只根據畫面上實際出現的內容判讀，看不清楚的欄位就填空字串，不要猜測或編造。若完全無法辨識任何航段，回覆 []。\n\n' +
-        '回覆範例（僅供格式參考，不代表本次答案）：\n' +
-        '[{"dep":"TPE","arr":"SEA","mkt":"AS","op":"JX","flt":"7210","date":"28SEP"}]';
-
-      sample.json(prompt, {images: files, modelTier: "default", cache: false})
-        .then(function(data){
-          if(!Array.isArray(data) || !data.length){
-            setStatus("未能從圖片中辨識出任何航段，請確認截圖清晰完整，或改為手動輸入。","err");
-            return;
-          }
-          segBody.innerHTML = "";
-          data.forEach(function(row){
-            addSegRow({
-              dep: String(row.dep||"").toUpperCase().slice(0,4),
-              arr: String(row.arr||"").toUpperCase().slice(0,4),
-              mkt: String(row.mkt||"").toUpperCase().slice(0,3),
-              op: String(row.op||"").toUpperCase().slice(0,3),
-              flt: String(row.flt||""),
-              date: String(row.date||"")
-            });
-          });
-          recompute();
-          setStatus("已辨識出 "+data.length+" 個航段並帶入下方表格 —— 請逐欄核對是否正確，AI 判讀可能有誤。","ok");
-        })
-        .catch(function(e){
-          var code = e && e.code;
-          var msgs = {
-            not_granted:"此工作區未開放使用 AI 辨識功能。",
-            sampling_disabled:"此帳號無法使用 AI 辨識功能。",
-            images_unavailable:"此檢視環境不支援圖片辨識，請手動輸入。",
-            image_rejected:"圖片格式不支援或檔案過大，請換一張截圖再試。",
-            rate_limited:"目前請求量過大，請稍後再試一次。",
-            invalid_json:"AI 回覆的格式無法解析，請重新整理後再試一次。",
-            refused:"AI 拒絕處理此圖片，請確認截圖內容或改為手動輸入。",
-            empty_completion:"AI 未能產生辨識結果，請換一張較清晰的截圖再試。"
-          };
-          setStatus(msgs[code] || "辨識時發生問題，請稍後再試或改為手動輸入。","err");
-        })
-        .finally(function(){ goBtn.disabled = false; });
     });
   })();
 
