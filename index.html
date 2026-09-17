@@ -1101,6 +1101,18 @@
       });
     });
 
+    // 四碼航班號常見於 codeshare；若未填實際承運人，codeshare 認定與費率判定可能因此失準，提醒人工確認。
+    var maybeCs = [];
+    raw.forEach(function(s, si){
+      if(!s.op && /^\d{4}[A-Z]?$/.test(String(s.flt||"").trim())){ maybeCs.push("第 "+(si+1)+" 段 "+(s.mkt||"")+(s.flt||"")); }
+    });
+    if(maybeCs.length){
+      var cs = document.createElement("div");
+      cs.className = "diverge-note";
+      cs.textContent = "⚠ " + maybeCs.join("、") + " 為四碼航班號（常見於 codeshare）但未填「實際承運人 OP」。若實際由他航執飛，請補填 OP 後重新判定；本工具以「任一航段 MC≠OC」認定 codeshare，漏填會影響超額費率的判定結果。";
+      resultsContainer.appendChild(cs);
+    }
+
     if(allUnknown.length){
       unknownBox.innerHTML = '<span class="badge unconfirmed">未收錄機場</span> '+allUnknown.join("、")+' — 判定過程將略過涉及這些機場的跨區比對，結果僅供參考。';
     }
