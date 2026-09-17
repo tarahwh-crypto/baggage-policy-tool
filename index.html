@@ -1155,15 +1155,22 @@
       var stopGuess = /^(0|Q|\(\)|\[\])$/.test(stopMark);
       if(stopGuess) stopMark = "O";
       var stopUnclear = stopGuess || (!!stopMark && !/^[OX]$/.test(stopMark) && !/^[-–—.]$/.test(stopMark));
-      var combo = (tokens[idx]||"").match(/^([A-Z][A-Z0-9]|[A-Z0-9][A-Z])(\d{1,4}[A-Z]?)$/);
+      var combo = (tokens[idx]||"").match(/^([A-Z][A-Z0-9]{1,2})(\d{2,4}[A-Z]?)$/); // AA1399；OCR 多讀一字母的 JIX7521 也一併拆開
       if(combo){ tokens.splice(idx, 1, combo[1], combo[2]); } // AA1399 → AA + 1399，後續欄位判讀維持不變
-      if(idx>=tokens.length || !/^[A-Z0-9]{2,3}$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識行銷承運人代碼"}); return; }
+      // 承運人／航班號讀不出來時不整列丟棄：該欄留空帶入，讓航段表以紅框標示待補，避免整段行程消失。
+      var needFix = false;
+      if(idx<tokens.length && /^[A-Z0-9]{3}$/.test(tokens[idx])){ tokens[idx] = ""; needFix = true; } // IATA 代碼固定 2 碼，3 碼多半是 OCR 多讀（如 JIX）
+      if(idx>=tokens.length || !/^[A-Z0-9]{2}$/.test(tokens[idx])){ tokens.splice(idx, 0, ""); needFix = true; }
       var mkt = tokens[idx]; idx++;
-      if(idx>=tokens.length || !/^\d{1,5}[A-Z]?$/.test(tokens[idx])){ failed.push({line:lineNo, reason:"無法辨識航班號"}); return; }
+      if(idx>=tokens.length || !/^\d{1,5}[A-Z]?$/.test(tokens[idx])){ tokens.splice(idx, 0, ""); needFix = true; }
       var flt = tokens[idx]; idx++;
       var op = "";
       // 兩個相同字母（如艙等 V 被 OCR 讀成 Vv→VV）不是承運人代碼，不採為實際承運人。
-      if(idx<tokens.length && /^[A-Z0-9]{2,3}$/.test(tokens[idx]) && tokens[idx]!==mkt && !/^([A-Z])\1$/.test(tokens[idx])){ op = tokens[idx]; idx++; }
+      // 兩個相同字母可能是真代碼（AA）也可能是艙等誤判（Vv→VV）：後面還接著艙等、或該代碼在規則表內，才採為實際承運人。
+      var opCand = tokens[idx] || "";
+      var opOk = /^[A-Z0-9]{2,3}$/.test(opCand) && opCand !== mkt &&
+                 (!/^([A-Z])\1$/.test(opCand) || /^[A-Z]$/.test(tokens[idx+1]||"") || !!findRule(opCand));
+      if(idx<tokens.length && opOk){ op = opCand; idx++; }
       if(idx<tokens.length && /^[A-Z]$/.test(tokens[idx])){ idx++; } // 艙等（選填）
       var date = "";
       // 日期改為往後掃描：OCR 可能在承運人／艙等欄留下雜訊（如 )X），逐欄比對會卡住而漏掉日期；
@@ -1172,7 +1179,7 @@
         var dt = tokens[k].replace(/[^A-Z0-9]/g, "");
         if(/^\d{1,2}[A-Z0]{3}$/.test(dt)){ date = dt.slice(0, dt.length-3) + dt.slice(-3).replace(/0/g, "O"); idx = k+1; break; }
       }
-      rows.push({dep:dep, arr:arr, mkt:mkt, op:op, flt:flt, date:date, brk:(stopMark === "O"), stopUnclear:stopUnclear});
+      rows.push({dep:dep, arr:arr, mkt:mkt, op:op, flt:flt, date:date, brk:(stopMark === "O"), stopUnclear:stopUnclear, needsCheck:needFix});
     });
     return {rows:rows, failed:failed};
   }
@@ -1272,7 +1279,8 @@
     recompute();
     var brkCount = result.rows.filter(function(r){ return r.brk; }).length;
     var unclearCount = result.rows.filter(function(r){ return r.stopUnclear; }).length;
-    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "") + (unclearCount ? "；有 "+unclearCount+" 段的停留標記為 OCR 推測（例如把 O 讀成 0），請確認「到達地停留（斷點）」勾選是否正確" : "");
+    var fixCount = result.rows.filter(function(r){ return r.needsCheck; }).length;
+    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "") + (unclearCount ? "；有 "+unclearCount+" 段的停留標記為 OCR 推測（例如把 O 讀成 0），請確認「到達地停留（斷點）」勾選是否正確" : "") + (fixCount ? "；有 "+fixCount+" 段的承運人或航班號無法辨識，已留空並以紅框標示，請點「編輯航段」補上後重新判定" : "");
     if(result.failed.length){
       var lineNos = result.failed.map(function(f){ return f.line; }).join("、");
       return {ok:true, cls:"err", message: msg+"，另有第 "+lineNos+" 行無法辨識（下方已用紅框標示），請點「編輯航段」解鎖後手動核對或補充。"};
