@@ -503,7 +503,7 @@
         <details class="adv">
           <summary>進階：地區 / 分區對照（供 MSC 跨區判定使用）</summary>
           <div class="adv-body">
-            機場地區分類採 IATA 三大區（Area 1 美洲／Area 2 歐非中東／Area 3 亞太）及其下分區。內建約 130 個常用機場，若查無代碼，判定過程會標示「未收錄」，請在下方手動指定該機場所屬 Area／分區後重新計算。中國／港澳／台灣／蒙古併為「東北亞」分區，與官方 IATA 細分或有出入，屬簡化假設，正式作業請以 SOP 對照表為準。
+            機場地區分類採 IATA 三大區（Area 1 美洲／Area 2 歐非中東／Area 3 亞太）及其下分區。內建約 130 個常用機場，若查無代碼，判定過程會標示「未收錄」，請在下方手動指定該機場所屬 Area／分區後重新計算。分區依 IATA Resolution 302 之 Area 3 細分：日本／韓國自成一區；中國（含港澳）、台灣、蒙古與東南亞各國同屬「東南亞」分區；印度、巴基斯坦、孟加拉、斯里蘭卡、尼泊爾等屬「南亞次大陸」分區。故如 TPE-BKK 屬同分區內航段，BKK-DEL 才是跨分區航段。正式作業請以 SOP 對照表為準。
             <div id="unknownAirports" style="margin-top:8px;"></div>
           </div>
         </details>
@@ -536,13 +536,13 @@
   // area: 1 Americas / 2 EMEA / 3 Asia-Pacific
   // subarea (informal, editable per SOP): NAM CAM CAR SAM | EUR MEA AFR | NEA JPK SEA SAS SWP
   var AIRPORTS = {
-    // Taiwan / Greater China / Mongolia (NEA)
-    TPE:[3,"NEA","TW"], TSA:[3,"NEA","TW"], KHH:[3,"NEA","TW"], RMQ:[3,"NEA","TW"],
-    HKG:[3,"NEA","HK"], MFM:[3,"NEA","MO"],
-    PVG:[3,"NEA","CN"], SHA:[3,"NEA","CN"], PEK:[3,"NEA","CN"], PKX:[3,"NEA","CN"],
-    CAN:[3,"NEA","CN"], SZX:[3,"NEA","CN"], CTU:[3,"NEA","CN"], XIY:[3,"NEA","CN"],
-    HGH:[3,"NEA","CN"], XMN:[3,"NEA","CN"], CKG:[3,"NEA","CN"], WUH:[3,"NEA","CN"],
-    ULN:[3,"NEA","MN"],
+    // Taiwan / Greater China / Mongolia — 依 IATA Res 302 屬 Area 3 之 South East Asia 分區（SEA）
+    TPE:[3,"SEA","TW"], TSA:[3,"SEA","TW"], KHH:[3,"SEA","TW"], RMQ:[3,"SEA","TW"],
+    HKG:[3,"SEA","HK"], MFM:[3,"SEA","MO"],
+    PVG:[3,"SEA","CN"], SHA:[3,"SEA","CN"], PEK:[3,"SEA","CN"], PKX:[3,"SEA","CN"],
+    CAN:[3,"SEA","CN"], SZX:[3,"SEA","CN"], CTU:[3,"SEA","CN"], XIY:[3,"SEA","CN"],
+    HGH:[3,"SEA","CN"], XMN:[3,"SEA","CN"], CKG:[3,"SEA","CN"], WUH:[3,"SEA","CN"],
+    ULN:[3,"SEA","MN"],
     // Japan / Korea
     NRT:[3,"JPK","JP"], HND:[3,"JPK","JP"], KIX:[3,"JPK","JP"], ITM:[3,"JPK","JP"],
     NGO:[3,"JPK","JP"], FUK:[3,"JPK","JP"], CTS:[3,"JPK","JP"], OKA:[3,"JPK","JP"],
@@ -597,7 +597,7 @@
   var SUBAREA_NAME = {
     NAM:"北美",CAM:"中美",CAR:"加勒比海",SAM:"南美",
     EUR:"歐洲",MEA:"中東",AFR:"非洲",
-    NEA:"東北亞／大中華",JPK:"日韓",SEA:"東南亞",SAS:"南亞次大陸",SWP:"西南太平洋"
+    JPK:"日韓",SEA:"東南亞",SAS:"南亞次大陸",SWP:"西南太平洋"
   };
 
   function lookup(code){
