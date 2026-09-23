@@ -654,14 +654,39 @@
   // 使用者需點「編輯航段」解鎖後才能修正或新增／刪除航段。
   var segLocked = false;
 
+  // 整列文字欄位皆空白（且未勾斷點）→ 視為空白列：不標紅框、不參與判定，完成編輯時自動移除。
+  function isRowBlank(tr){
+    var blank = true;
+    tr.querySelectorAll("input").forEach(function(inp){
+      if(inp.type === "checkbox"){ if(inp.checked) blank = false; }
+      else if(inp.value.trim()){ blank = false; }
+    });
+    return blank;
+  }
+
   function updateRowValidity(tr){
+    var blank = isRowBlank(tr);
     ["dep","arr","mkt"].forEach(function(f){
       var el = tr.querySelector('[data-f="'+f+'"]');
-      if(el){ el.classList.toggle("incomplete", !el.value.trim()); }
+      if(el){ el.classList.toggle("incomplete", !blank && !el.value.trim()); }
+    });
+  }
+
+  // 編輯中點到（或輸入到）最後一列且該列已有內容時，自動在下方補一列空白航段，方便連續輸入。
+  function ensureTrailingBlankRow(tr){
+    if(segLocked || !tr || tr !== segBody.lastElementChild) return;
+    if(isRowBlank(tr)) return; // 最後一列本身就是空白列，不再重複新增
+    addSegRow();
+  }
+
+  function removeBlankRows(){
+    Array.prototype.slice.call(segBody.querySelectorAll("tr")).forEach(function(tr){
+      if(isRowBlank(tr)) tr.remove();
     });
   }
 
   function setSegLocked(locked){
+    if(locked) removeBlankRows(); // 完成編輯時，未輸入內容的空白航段自動消失
     segLocked = locked;
     segBody.querySelectorAll("tr").forEach(function(tr){
       tr.querySelectorAll("input").forEach(function(inp){ inp.disabled = locked; });
@@ -725,6 +750,16 @@
     });
     return out;
   }
+
+  segBody.addEventListener("focusin", function(e){
+    if(e.target.tagName === "INPUT") ensureTrailingBlankRow(e.target.closest("tr"));
+  });
+  segBody.addEventListener("input", function(e){
+    ensureTrailingBlankRow(e.target.closest("tr"));
+  });
+  segBody.addEventListener("change", function(e){
+    if(e.target.type === "checkbox"){ updateRowValidity(e.target.closest("tr")); ensureTrailingBlankRow(e.target.closest("tr")); }
+  });
 
   document.getElementById("addRow").addEventListener("click", function(){ addSegRow(); recompute(); });
   document.getElementById("clearRows").addEventListener("click", function(){
