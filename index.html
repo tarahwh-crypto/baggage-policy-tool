@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>行李政策承運人判定</title>
+<title>行李政策判定(MSC/FMC)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;650&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -388,20 +388,20 @@
 
 <div class="wrap">
   <header class="page">
-    <div class="eyebrow"><span class="dot"></span>AOD · 行李政策承運人判定（原型）</div>
+    <div class="eyebrow"><span class="dot"></span>AOD · 行李政策判定</div>
     <h1>誰的行李政策適用這張票？</h1>
-    <p class="sub">輸入旅客實際開票行程，工具依 DOT FMC 原則與 IATA MSC 判定邏輯，逐步推算應適用哪一家航空公司的免費行李額度與超額費率。</p>
+    <p class="sub">輸入旅客實際開票行程，本工具將依 IATA MSC 與 DOT FMC 判定邏輯，逐步推算應適用哪一家航空公司的免費行李額度與超額費率。</p>
   </header>
 
   <div class="banner">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.5M12 7.6h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    <div>本工具依據《Interline Handbook》（STARLUX-PRP-005）、《聯航作業程序 Interline Handling Procedures》（SOP-AOD-26-002）內容提供。</div>
+    <div>本工具依據《Interline Handbook - STARLUX-PRP-005》、《聯航作業程序 Interline Handling Procedures - SOP-AOD-26-002》內容提供。</div>
   </div>
 
   <!-- STEP 1 -->
   <section class="step">
     <div class="step-head"><span class="step-num">1</span><span class="step-title">輸入開票行程</span></div>
-    <p class="step-desc">依「原始開票行程」順序輸入每一航段。售票航空公司(MC)請填實際開票所顯示的代碼；若該航段為 codeshare 由其他公司實際飛航，請填「營運航空公司(OC)」，留空表示與售票航空公司相同。</p>
+    <p class="step-desc">依「原始開票行程」順序輸入每一航段。售票航空公司(MC)請填實際開票所顯示的代碼；若該航段為 Codeshare 由其他公司實際營運，請填「營運航空公司(OC)」，留空表示與售票航空公司相同。</p>
 
     <div class="ocr-box parse-box">
       <details open>
@@ -410,8 +410,8 @@
            
         </summary>
         <div class="ocr-body">
-          <p class="ocr-desc">從訂位／CM 系統選取整段行程文字複製、貼到下方框內即可自動拆解成航段（支援三種格式，見框內範例）；也可以把截圖直接<b>貼上</b>（<span class="mono">Ctrl+V</span>／<span class="mono">Cmd+V</span>）或<b>拖曳</b>到框內，或用「上傳截圖檔案」，會自動用 OCR 辨識文字後嘗試判定。</p>
-          <p class="ocr-desc">截圖辨識為免費、非 AI 的傳統文字辨識，對承運人代碼／航班號／日期常有誤判（如 0/O、1/I、S/5）。<b>能複製到文字時請優先貼文字</b>；用截圖時務必核對辨識結果再送出。</p>
+          <p class="ocr-desc">從系統選取整段行程文字複製、貼到下方框內即可自動拆解成航段（支援三種格式，見框內範例）；也可以把截圖直接<b>貼上</b>或<b>拖曳</b>到框內，或用「上傳截圖檔案」，完成輸入/上傳後，請點選「解析並帶入」。</p>
+          <p class="ocr-desc">截圖辨識對承運人代碼／航班號／日期常有誤判（如 0/O、1/I、S/5）。<b>能複製到文字時請優先貼文字</b>；用截圖時務必核對辨識結果再送出。</p>
           <textarea id="parseText" class="parse-textarea" rows="4" placeholder="貼上行程文字，或直接貼上／拖曳截圖到這裡（Ctrl+V／Cmd+V，或拖放圖檔）。&#10;文字支援三種格式，例如：&#10;1 TPE SEA X AS 7210 JX O 28SEP&#10;2 SEA PDX O AS 434 G 28SEP&#10;&#10;或訂位系統逐點格式：&#10;1 OOKA EY5182JX Q 15SEP1550 OK ...&#10;2 XTPE EY 899   Q 15SEP1940 OK ...&#10;  OKA&#10;&#10;或時刻表／艙位顯示格式（可含或不含前面的序號）：&#10;7  CX 472 S 15SEP 2 HKGTPE&#10;8  JX 032 N 15SEP 2 TPESEA"></textarea>
           <div class="ocr-row">
             <button id="parseGo" class="primary">解析並帶入</button>
@@ -427,7 +427,7 @@
     <div class="seg-result-head">
       <div>
         <div class="seg-result-title">帶入結果（航段表）</div>
-        <div class="seg-result-sub">不論用上面哪種方式帶入，或手動輸入，結果都會顯示在下方。貼上文字或截圖解析帶入後，欄位會自動反灰鎖定；有紅框表示該欄未填，請點「編輯航段」解鎖後修正或手動輸入。</div>
+        <div class="seg-result-sub">貼上文字或截圖解析帶入後，航段欄位會自動反灰鎖定；有紅框表示該欄未填，請點「編輯航段」解鎖後修正。</div>
       </div>
       <div class="seg-lock-controls">
         <button id="toggleEditSeg" class="ghost">✎ 編輯航段</button>
@@ -452,7 +452,7 @@
       <tbody id="segBody"></tbody>
     </table>
     </div>
-    <p class="step-desc" style="margin-top:8px;font-size:12px;">「到達地停留（斷點）」：若此航段到達地為實際停留點（非單純轉機），行程會從此處分成不同「段」，免費行李額度／超額行李費率將分段各自判定（例如去程與回程分開判定）。貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際有停留過夜的到達地。</p>
+    <p class="step-desc" style="margin-top:8px;font-size:12px;">「到達地停留（斷點）」：若此航段到達地為實際停留點（非單純轉機），行程會從此處分成不同「段」，免費行李額度／超額行李費率將分段各自判定（例如去程與回程分開判定）。貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際有停留的目的地。</p>
 
     <div class="row-actions">
       <button id="addRow">＋ 新增航段</button>
