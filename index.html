@@ -938,9 +938,9 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
       L('<td><input class="cell" data-f="dep" maxlength="3" placeholder="三字代碼" value="', '<td><input class="cell" data-f="dep" maxlength="3" placeholder="3-letter code" value="')+(data.dep||"")+'"></td>'+
       L('<td><input class="cell" data-f="arr" maxlength="3" placeholder="三字代碼" value="', '<td><input class="cell" data-f="arr" maxlength="3" placeholder="3-letter code" value="')+(data.arr||"")+'"></td>'+
       L('<td><input class="cell" data-f="mkt" maxlength="2" placeholder="二字代碼" value="', '<td><input class="cell" data-f="mkt" maxlength="2" placeholder="2-letter code" value="')+(data.mkt||"")+'"></td>'+
-      L('<td><input class="cell" data-f="op" maxlength="2" placeholder="選填" value="', '<td><input class="cell" data-f="op" maxlength="2" placeholder="Optional" value="')+(data.op||"")+'"></td>'+
-      L('<td><input class="cell" data-f="flt" placeholder="選填" value="', '<td><input class="cell" data-f="flt" placeholder="Optional" value="')+(data.flt||"")+'"></td>'+
-      L('<td><input class="cell" data-f="date" placeholder="選填" value="', '<td><input class="cell" data-f="date" placeholder="Optional" value="')+(data.date||"")+'"></td>'+
+      L('<td><input class="cell" data-f="op" maxlength="2" value="', '<td><input class="cell" data-f="op" maxlength="2" value="')+(data.op||"")+'"></td>'+
+      L('<td><input class="cell" data-f="flt" value="', '<td><input class="cell" data-f="flt" value="')+(data.flt||"")+'"></td>'+
+      L('<td><input class="cell" data-f="date" value="', '<td><input class="cell" data-f="date" value="')+(data.date||"")+'"></td>'+
       L('<td class="col-brk cell-chk-cell"><input type="checkbox" class="cell-chk" data-f="brk" title="抵達地為停留點（斷點），行程從此分段"', '<td class="col-brk cell-chk-cell"><input type="checkbox" class="cell-chk" data-f="brk" title="Arrival point is a stopover (break); the journey is split here"')+(data.brk?" checked":"")+'></td>'+
       L('<td class="col-del"><button class="icon-del" title="刪除此航段" aria-label="刪除此航段">✕</button></td>', '<td class="col-del"><button class="icon-del" title="Delete this segment" aria-label="Delete this segment">✕</button></td>');
     tr.querySelectorAll("input").forEach(function(inp){
