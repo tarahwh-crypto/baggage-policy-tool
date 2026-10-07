@@ -477,14 +477,25 @@
     </details>
   </section>
 
-  <!-- STEP 3 -->
-  <section class="step">
-    <div class="step-head"><span class="step-num">3</span><span class="step-title">航空公司例外規則表</span></div>
+  
 
-    <details class="adv">
-      <summary>顯示 / 編輯規則表（一般作業不需開啟）</summary>
+  <footer class="refs">
+    參考依據：
+    <ul>
+      <li>《聯航作業說明 Interline Service Instruction》（更新 2026/07/14）「Baggage Information for Codeshare Flight」分頁 — AS／AA／EY 之 FBA、EB Charge 判定規則與逐條範例，為例外規則表之主要依據</li>
+      <li>14 CFR § 399.87 — 美國出發／抵達行程之行李額度與費用，DOT 預設適用行程第一段之售票航空公司（Marketing Carrier, MC）政策；<a href="https://www.ecfr.gov/current/title-14/chapter-II/subchapter-F/part-399/subpart-G/section-399.87" target="_blank" rel="noopener">eCFR 條文</a></li>
+      <li>IATA Resolution 302 — Most Significant Carrier（MSC）判定：依「跨 Area → 跨分區 → 同分區內第一個國際航段」順序，取該航段之售票航空公司（2015 年 4 月後開票適用）；個別承運人可能另有內規（如 AS 改取營運航空公司）</li>
+      <li>加拿大 CTA 之對應規則與美國 DOT 類似，起訖涉加拿大時比照辦理，細節見 <a href="https://otc-cta.gc.ca/eng/publication/interline-baggage-rules-canada-interpretation-note" target="_blank" rel="noopener">CTA 說明</a></li>
+      <li>未列入規則表之航空公司，判定結果僅為 DOT／IATA 一般性推定，非該公司實際內規，請務必個別核對後再報價收費</li>
+    </ul>
+  </footer>
+
+<!-- 管理者參考（原步驟 3） -->
+<div class="admin-ref" style="margin-top:14px;">
+<details class="adv">
+      <summary>管理者參考：航空公司例外規則表與分區對照（一般作業不需開啟）</summary>
       <div class="adv-body">
-        <p class="step-desc" style="margin-top:0;">本表列出各航空公司「擔任 FMC 時」的判定方式，「免費託運行李額度」與「超額行李費率」、涉美加與未涉美加均可分別設定（自家政策 FMC／改採 MSC－取售票航空公司／改採 MSC－取營運航空公司／第一家營運航空公司／其他）。<b>判定順序：</b>涉美加行程依 14 CFR § 399.87 與加拿大 CTA，先認「整張機票第一個航段的售票航空公司（FMC）」是哪一家，再套用該公司在本表的設定並全票適用——不因其他航段出現別家夥伴而改判，也不因停留分段而重算 FMC（例如 AS 的「改採 MSC」只有在 AS 自己就是 FMC 時才會生效）；未涉美加行程則依行程中出現的夥伴（售票或營運航空公司）套用該夥伴設定。MSC 本身仍依 IATA Res 302 於停留點分段各自計算。<b>codeshare 認定：</b>該段行程中只要有任一航段的售票航空公司與營運航空公司不同，即視為 codeshare；若全段皆無（營運航空公司 OC 留空＝與售票航空公司相同），則不套用「依第一段營運航空公司」之 codeshare 規定，改依 MSC 判定。依據：《Interline Handbook》（STARLUX-PRP-005）、《聯航作業程序 Interline Handling Procedures》（SOP-AOD-26-002）。<b>此表僅供查閱，如需新增或修改規則請洽 AOD 管理單位。</b></p>
+        <p class="step-desc" style="margin-top:0;">本表列出各航空公司「擔任 FMC 時」的判定方式，「免費託運行李額度」與「超額行李費率」、涉美加與未涉美加均可分別設定（自家政策 FMC／改採 MSC－取售票航空公司／改採 MSC－取營運航空公司／第一家營運航空公司／其他）。<b>判定順序：</b>涉美加行程依 14 CFR § 399.87 與加拿大 CTA，先認「整張機票第一個航段的售票航空公司（FMC）」是哪一家，再套用該公司在本表的設定並全票適用——不因其他航段出現別家夥伴而改判，也不因停留分段而重算 FMC（例如 AS 的「改採 MSC」只有在 AS 自己就是 FMC 時才會生效）；未涉美加行程則依行程中出現的夥伴（售票或營運航空公司）套用該夥伴設定。MSC 本身仍依 IATA Res 302 於停留點分段各自計算。<b>codeshare 認定：</b>該段行程中只要有任一航段的售票航空公司與營運航空公司不同，即視為 codeshare；若全段皆無（營運航空公司 OC 留空＝與售票航空公司相同），則不套用「依第一段營運航空公司」之 codeshare 規定，改依 MSC 判定。依據：《Interline Handbook》（STARLUX-PRP-005）、《聯航作業程序 Interline Handling Procedures》（SOP-AOD-26-002）。<b>此表僅供查閱，如需新增或修改規則請洽 AOD 管理單位。</b>「規則查證」欄：「已對照文件」表示該列規則已逐條對照《聯航作業說明》範例；「尚未對照」表示僅為推定，判定結果會以黃色顯示並提醒勿直接用於報價。</p>
 
         <div class="tbl-scroll">
         <table class="rules" id="rulesTable">
@@ -496,7 +507,7 @@
               <th class="col-mode">額度・未涉美加</th>
               <th class="col-mode">費率・未涉美加</th>
               <th>備註 / 依據</th>
-              <th class="col-code">狀態</th>
+              <th class="col-code" style="width:96px;">規則查證</th>
             </tr>
           </thead>
           <tbody id="rulesBody"></tbody>
@@ -512,18 +523,7 @@
         </details>
       </div>
     </details>
-  </section>
-
-  <footer class="refs">
-    參考依據：
-    <ul>
-      <li>《聯航作業說明 Interline Service Instruction》（更新 2026/07/14）「Baggage Information for Codeshare Flight」分頁 — AS／AA／EY 之 FBA、EB Charge 判定規則與逐條範例，為步驟 3 規則表之主要依據</li>
-      <li>14 CFR § 399.87 — 美國出發／抵達行程之行李額度與費用，DOT 預設適用行程第一段之售票航空公司（Marketing Carrier, MC）政策；<a href="https://www.ecfr.gov/current/title-14/chapter-II/subchapter-F/part-399/subpart-G/section-399.87" target="_blank" rel="noopener">eCFR 條文</a></li>
-      <li>IATA Resolution 302 — Most Significant Carrier（MSC）判定：依「跨 Area → 跨分區 → 同分區內第一個國際航段」順序，取該航段之售票航空公司（2015 年 4 月後開票適用）；個別承運人可能另有內規（如 AS 改取營運航空公司）</li>
-      <li>加拿大 CTA 之對應規則與美國 DOT 類似，起訖涉加拿大時比照辦理，細節見 <a href="https://otc-cta.gc.ca/eng/publication/interline-baggage-rules-canada-interpretation-note" target="_blank" rel="noopener">CTA 說明</a></li>
-      <li>未列入規則表之航空公司，判定結果僅為 DOT／IATA 一般性推定，非該公司實際內規，請務必個別核對後再報價收費</li>
-    </ul>
-  </footer>
+</div>
 </div>
 
 <div id="imgLightbox" class="lightbox" hidden>
@@ -910,7 +910,7 @@
           (r.shot?('<div class="rule-shot"><img src="'+r.shot.src+'" alt="'+esc(r.shot.caption)+'" loading="lazy"><div class="rule-shot-cap">'+esc(r.shot.caption)+'（點圖可放大檢視）</div></div>'):'')+
           ((r.refs&&r.refs.length)?r.refs.map(function(rf){ return '<br><a class="ref-link" href="'+esc(rf.url)+'" target="_blank" rel="noopener noreferrer">🔗 '+esc(rf.label)+'</a>'; }).join(''):'')+
         '</td>'+
-        '<td><span class="badge '+(r.confirmed?"confirmed":"unconfirmed")+'">'+(r.confirmed?"已確認":"待確認")+'</span></td>';
+        '<td><span class="badge '+(r.confirmed?"confirmed":"unconfirmed")+'">'+(r.confirmed?"已對照文件":"尚未對照")+'</span></td>';
       rulesBody.appendChild(tr);
     });
   }
@@ -1162,11 +1162,11 @@
 
       traceItems.push({label:"查例外規則表（"+(touchesUS?"涉美加":"未涉美加")+"）", html:
         (isCustom
-          ? "行程中出現合作夥伴 <b>"+partnerCode+"</b>，套用其於步驟 3 規則表中之設定"
+          ? "行程中出現合作夥伴 <b>"+partnerCode+"</b>，套用其於例外規則表中之設定"
           : (partnerCode ? "行程全程為 <b>JX</b>，套用 JX 自身設定" : "行程中未出現已登錄之合作夥伴，套用預設規則")) +
         "：免費行李額度＝<b>"+MODE_LABEL[allocMode]+"</b>、超額行李費率＝<b>"+MODE_LABEL[feeMode]+"</b>。" +
         (rule.note? " "+rule.note : "") +
-        (confirmed ? "" : "（<span class='badge unconfirmed'>待確認</span>，如需確認或補充請洽 AOD 管理單位）")
+        (confirmed ? "" : "（<span class='badge unconfirmed'>規則尚未對照文件</span>，如需確認或補充請洽 AOD 管理單位）")
       });
 
       var needMSCmkt = (allocMode==="msc-mkt" || feeMode==="msc-mkt");
