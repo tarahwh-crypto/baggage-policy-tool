@@ -1163,7 +1163,7 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
 
   function resultCardHTML(label, carrier, note, confirmed){
     var rule = carrier ? findRule(carrier) : null;
-    var isFeeCard = label === L("超額行李費率","Excess Baggage Charge");
+    var isFeeCard = label === L("超額行李費率 (EB)","Excess Baggage Charge (EB)");
     var shotHTML = "";
     if(rule && rule.shot && isFeeCard){
       shotHTML = '<div class="rule-shot"><img src="'+rule.shot.src+'" alt="'+esc(rule.shot.caption)+'" loading="lazy"><div class="rule-shot-cap">'+esc(rule.shot.caption)+L('（點圖可放大檢視）</div></div>', ' (click to enlarge)</div></div>');
@@ -1375,8 +1375,8 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
 
     if(!raw.length){
       resultsContainer.innerHTML = '<div class="result-grid">' +
-        resultCardHTML(L("免費託運行李額度", "Free Baggage Allowance"), null, "", true) +
-        resultCardHTML(L("超額行李費率", "Excess Baggage Charge"), null, "", true) +
+        resultCardHTML(L("免費託運行李額度 (FBA)", "Free Baggage Allowance (FBA)"), null, "", true) +
+        resultCardHTML(L("超額行李費率 (EB)", "Excess Baggage Charge (EB)"), null, "", true) +
         '</div>';
       traceContainer.appendChild(traceItem(L("等待輸入", "Waiting for input"),L("請於步驟 1 貼上行程文字，或點「＋ 新增航段」手動輸入。", "Paste the itinerary text in step 1, or click “+ Add segment” to enter it manually.")));
       return;
@@ -1407,8 +1407,8 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
       var grid = document.createElement("div");
       grid.className = "result-grid";
       grid.innerHTML =
-        resultCardHTML(L("免費託運行李額度", "Free Baggage Allowance"), result.allocOut.carrier, result.allocOut.note, result.allocOut.confirmed) +
-        resultCardHTML(L("超額行李費率", "Excess Baggage Charge"), result.feeOut.carrier, result.feeOut.note, result.feeOut.confirmed);
+        resultCardHTML(L("免費託運行李額度 (FBA)", "Free Baggage Allowance (FBA)"), result.allocOut.carrier, result.allocOut.note, result.allocOut.confirmed) +
+        resultCardHTML(L("超額行李費率 (EB)", "Excess Baggage Charge (EB)"), result.feeOut.carrier, result.feeOut.note, result.feeOut.confirmed);
       resultsContainer.appendChild(grid);
       if(result.allocOut.carrier && /MSC/.test(result.allocOut.note + result.feeOut.note)){
         var s34 = document.createElement("div");
