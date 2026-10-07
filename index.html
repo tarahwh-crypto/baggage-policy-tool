@@ -495,7 +495,7 @@
 <details class="adv">
       <summary>管理者參考：航空公司例外規則表與分區對照（一般作業不需開啟）</summary>
       <div class="adv-body">
-        <p class="step-desc" style="margin-top:0;">本表列出各航空公司「擔任 FMC 時」的判定方式，「免費託運行李額度」與「超額行李費率」、涉美加與未涉美加均可分別設定（自家政策 FMC／改採 MSC－取售票航空公司／改採 MSC－取營運航空公司／第一家營運航空公司／其他）。<b>判定順序：</b>涉美加行程依 14 CFR § 399.87 與加拿大 CTA，先認「整張機票第一個航段的售票航空公司（FMC）」是哪一家，再套用該公司在本表的設定並全票適用——不因其他航段出現別家夥伴而改判，也不因停留分段而重算 FMC（例如 AS 的「改採 MSC」只有在 AS 自己就是 FMC 時才會生效）；未涉美加行程則依行程中出現的夥伴（售票或營運航空公司）套用該夥伴設定。MSC 本身仍依 IATA Res 302 於停留點分段各自計算。<b>codeshare 認定：</b>該段行程中只要有任一航段的售票航空公司與營運航空公司不同，即視為 codeshare；若全段皆無（營運航空公司 OC 留空＝與售票航空公司相同），則不套用「依第一段營運航空公司」之 codeshare 規定，改依 MSC 判定。依據：《Interline Handbook》（STARLUX-PRP-005）、《聯航作業程序 Interline Handling Procedures》（SOP-AOD-26-002）。<b>此表僅供查閱，如需新增或修改規則請洽 AOD 管理單位。</b>「規則查證」欄：「已對照文件」表示該列規則已逐條對照《聯航作業說明》範例；「尚未對照」表示僅為推定，判定結果會以黃色顯示並提醒勿直接用於報價。</p>
+        <p class="step-desc" style="margin-top:0;">本表列出各航空公司「擔任 FMC 時」的判定方式，「免費託運行李額度」與「超額行李費率」、涉美加與未涉美加均可分別設定（自家政策 FMC／改採 MSC－取售票航空公司／改採 MSC－取營運航空公司／第一家營運航空公司／其他）。<b>判定順序：</b>涉美加行程依 14 CFR § 399.87 與加拿大 CTA，先認「整張機票第一個航段的售票航空公司（FMC）」是哪一家，再套用該公司在本表的設定並全票適用——不因其他航段出現別家夥伴而改判，也不因停留分段而重算 FMC（例如 AS 的「改採 MSC」只有在 AS 自己就是 FMC 時才會生效）；未涉美加行程則依行程中出現的夥伴（售票或營運航空公司）套用該夥伴設定。MSC 本身仍依 IATA Res 302 於停留點分段各自計算。<b>codeshare 認定：</b>該段行程中只要有任一航段的售票航空公司與營運航空公司不同，即視為 codeshare；若全段皆無（營運航空公司 OC 留空＝與售票航空公司相同），則不套用「依第一段營運航空公司」之 codeshare 規定，改依 MSC 判定。依據：《Interline Handbook》（STARLUX-PRP-005）、《聯航作業程序 Interline Handling Procedures》（SOP-AOD-26-002）。<b>此表僅供查閱，如需新增或修改規則請洽 AOD 管理單位。</b>「合作類型」欄：目前與 JX 有 codeshare 合作者為 AS／AA／EY，各有協議約定的判定方式；其餘航空公司（含未列於本表者）為單純 interline，適用 DOT／IATA 標準規則（涉美加 FMC、未涉美加 MSC）。</p>
 
         <div class="tbl-scroll">
         <table class="rules" id="rulesTable">
@@ -507,7 +507,7 @@
               <th class="col-mode">額度・未涉美加</th>
               <th class="col-mode">費率・未涉美加</th>
               <th>備註 / 依據</th>
-              <th class="col-code" style="width:96px;">規則查證</th>
+              <th class="col-code" style="width:96px;">合作類型</th>
             </tr>
           </thead>
           <tbody id="rulesBody"></tbody>
@@ -740,12 +740,12 @@
       refs:[{url:"https://www.starlux-airlines.com/zh-TW/check-in-fly/baggage-information/excess-baggage-charge", label:"JX 官方行李政策頁面"},
             {url:"https://tarahwh-crypto.github.io/excess-baggage-calculator/", label:"JX 超額行李計算機"}]},
     {code:"EK", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
-      note:"Emirates：文件僅提供官方行李頁面連結，未列出與 JX 之 codeshare 專屬 FBA／EB 判定邏輯，暫套用 DOT／IATA 預設原則（涉美加 FMC、未涉美加 MSC），未經驗證。",
-      confirmed:false,
+      note:"Emirates：與 JX 為單純 interline（無 codeshare），適用 DOT／IATA 標準規則（涉美加 FMC、未涉美加 MSC）。",
+      confirmed:true,
       refs:[{url:"https://www.emirates.com/tw/english/before-you-fly/baggage/purchase-additional-baggage-allowance/", label:"EK 官方行李政策頁面"}]},
     {code:"QR", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
-      note:"Qatar：文件僅提供官方行李頁面連結，未列出與 JX 之 codeshare 專屬 FBA／EB 判定邏輯，暫套用 DOT／IATA 預設原則，未經驗證。文件另註記開立超額行李 EMD 收據副本需包含：(1) 旅客姓名 (2) 航程起訖（收取超額行李費之最終目的地） (3) 收取金額與服務類型（如超額行李、特殊行李）。",
-      confirmed:false,
+      note:"Qatar：與 JX 為單純 interline（無 codeshare），適用 DOT／IATA 標準規則（涉美加 FMC、未涉美加 MSC）。文件另註記開立超額行李 EMD 收據副本需包含：(1) 旅客姓名 (2) 航程起訖（收取超額行李費之最終目的地） (3) 收取金額與服務類型（如超額行李、特殊行李）。",
+      confirmed:true,
       refs:[{url:"https://www.qatarairways.com/en-tw/baggage/excess.html", label:"QR 官方行李政策頁面"}]}
   ];
   // Fallback for any carrier not listed above — DOT/IATA baseline, no known deviation.
@@ -896,6 +896,8 @@
       return c==="&" ? "&amp;" : c==="<" ? "&lt;" : "&gt;";
     });
   }
+  // 與 JX 有 codeshare 合作的航空公司；其餘為單純 interline，適用 DOT／IATA 標準規則。
+  var CODESHARE_PARTNERS = {AS:1, AA:1, EY:1};
   function renderRules(){
     rulesBody.innerHTML = "";
     rules.forEach(function(r){
@@ -910,7 +912,7 @@
           (r.shot?('<div class="rule-shot"><img src="'+r.shot.src+'" alt="'+esc(r.shot.caption)+'" loading="lazy"><div class="rule-shot-cap">'+esc(r.shot.caption)+'（點圖可放大檢視）</div></div>'):'')+
           ((r.refs&&r.refs.length)?r.refs.map(function(rf){ return '<br><a class="ref-link" href="'+esc(rf.url)+'" target="_blank" rel="noopener noreferrer">🔗 '+esc(rf.label)+'</a>'; }).join(''):'')+
         '</td>'+
-        '<td><span class="badge '+(r.confirmed?"confirmed":"unconfirmed")+'">'+(r.confirmed?"已對照文件":"尚未對照")+'</span></td>';
+        '<td><span class="badge confirmed">'+(r.code==="JX"?"JX 本身":(CODESHARE_PARTNERS[r.code]?"Codeshare":"Interline"))+'</span></td>';
       rulesBody.appendChild(tr);
     });
   }
@@ -1162,7 +1164,7 @@
 
       traceItems.push({label:"查例外規則表（"+(touchesUS?"涉美加":"未涉美加")+"）", html:
         (isCustom
-          ? "行程中出現合作夥伴 <b>"+partnerCode+"</b>，套用其於例外規則表中之設定"
+          ? "行程中出現"+(CODESHARE_PARTNERS[partnerCode]?"codeshare 夥伴":"interline 航空公司")+" <b>"+partnerCode+"</b>，套用其於例外規則表中之設定"
           : (partnerCode ? "行程全程為 <b>JX</b>，套用 JX 自身設定" : "行程中未出現已登錄之合作夥伴，套用預設規則")) +
         "：免費行李額度＝<b>"+MODE_LABEL[allocMode]+"</b>、超額行李費率＝<b>"+MODE_LABEL[feeMode]+"</b>。" +
         (rule.note? " "+rule.note : "") +
