@@ -482,6 +482,7 @@ body{margin:0;}
 /* 英文版改用拉丁字型優先，避免彎引號被中文字型排成全形寬度 */
 html[lang="en"]:root:root:root{--font-body:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,'Helvetica Neue',Arial,'Microsoft JhengHei',sans-serif;}
 table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
+.req{color:var(--bad);font-weight:700;margin-left:2px;}
 </style>
 <script>
 // 語言：?lang=en／?lang=zh 優先，其次沿用上次選擇，預設中文。切換語言即重新載入頁面。
@@ -553,12 +554,12 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
     <table class="seg" id="segTable">
       <thead>
         <tr>
-          <th class="col-route"><span class="i18n-zh">出發地</span><span class="i18n-en">Origin</span></th>
-          <th class="col-route"><span class="i18n-zh">目的地</span><span class="i18n-en">Destination</span></th>
-          <th class="col-carrier"><span class="i18n-zh">售票航空公司(MC)</span><span class="i18n-en">Marketing carrier (MC)</span></th>
-          <th class="col-op"><span class="i18n-zh">營運航空公司(OC)（選填）</span><span class="i18n-en">Operating carrier (OC) (optional)</span></th>
-          <th><span class="i18n-zh">航班號（選填）</span><span class="i18n-en">Flight no. (optional)</span></th>
-          <th class="col-date"><span class="i18n-zh">日期（選填）</span><span class="i18n-en">Date (optional)</span></th>
+          <th class="col-route"><span class="i18n-zh">出發地</span><span class="i18n-en">Origin</span><span class="req">*</span></th>
+          <th class="col-route"><span class="i18n-zh">目的地</span><span class="i18n-en">Destination</span><span class="req">*</span></th>
+          <th class="col-carrier"><span class="i18n-zh">售票航空公司(MC)</span><span class="i18n-en">Marketing carrier (MC)</span><span class="req">*</span></th>
+          <th class="col-op"><span class="i18n-zh">營運航空公司(OC)</span><span class="i18n-en">Operating carrier (OC)</span></th>
+          <th><span class="i18n-zh">航班號</span><span class="i18n-en">Flight no.</span></th>
+          <th class="col-date"><span class="i18n-zh">日期</span><span class="i18n-en">Date</span></th>
           <th class="col-brk"><span class="i18n-zh">抵達地停留<br>（斷點）</span><span class="i18n-en">Stopover at arrival<br>(break)</span></th>
           <th class="col-del"></th>
         </tr>
@@ -566,7 +567,7 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
       <tbody id="segBody"></tbody>
     </table>
     </div>
-    <p class="step-desc" style="margin:8px 0 4px;font-size:12.5px;"><span class="i18n-zh">貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際停留 24 小時以上的抵達地。</span><span class="i18n-en">When you paste reservation text with O/X markers, the boxes are ticked automatically from O (stopover) / X (connection). When entering manually, tick each arrival point where the passenger actually stops for 24 hours or more.</span></p>
+    <p class="step-desc" style="margin:8px 0 4px;font-size:12.5px;"><span class="i18n-zh"><span class="req">*</span> 為必填欄位。貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際停留 24 小時以上的抵達地。</span><span class="i18n-en"><span class="req">*</span> Required field. When you paste reservation text with O/X markers, the boxes are ticked automatically from O (stopover) / X (connection). When entering manually, tick each arrival point where the passenger actually stops for 24 hours or more.</span></p>
 <p class="step-desc" style="margin:0 0 16px;font-size:11.5px;font-style:italic;"><span class="i18n-zh">「抵達地停留（斷點）」：若此航段抵達地為實際停留點（非單純轉機），行程會從此處分成不同「段」，免費行李額度／超額行李費率將分段各自判定（例如去程與回程分開判定）。</span><span class="i18n-en">“Stopover at arrival (break)”: if the arrival point of this segment is a real stopover (not just a connection), the itinerary is split there into separate journeys, and the free baggage allowance / excess baggage charge are determined for each journey separately (e.g. outbound and return).</span></p>
 
     <div class="row-actions">
