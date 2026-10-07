@@ -575,7 +575,7 @@
     SAT:[1,"NAM","US"], AUS:[1,"NAM","US"],
     YVR:[1,"NAM","CA"], YYZ:[1,"NAM","CA"], YUL:[1,"NAM","CA"], YYC:[1,"NAM","CA"],
     YEG:[1,"NAM","CA"], YOW:[1,"NAM","CA"],
-    MEX:[1,"CAM","MX"], CUN:[1,"CAM","MX"], GDL:[1,"CAM","MX"],
+    MEX:[1,"NAM","MX"], CUN:[1,"NAM","MX"], GDL:[1,"NAM","MX"],
     SJO:[1,"CAM","CR"], PTY:[1,"CAM","PA"],
     // Caribbean / South America
     HAV:[1,"CAR","CU"], SJU:[1,"CAR","PR"], NAS:[1,"CAR","BS"],
@@ -606,12 +606,12 @@
   // IATA 的 Area（TC1/2/3）與分區是以「國家」定義，因此這裡只維護國家對照規則；
   // 機場屬於哪個國家，改由線上公開機場資料庫即時查得（見 loadAirportData），不再逐一寫死機場。
   // 上方 AIRPORTS 內建表僅保留作為離線備援，且優先採用（維持既有判定結果不變）。
-  // 埃及依 IATA 歸中東；MX／PR／GU／PA 之分區沿用內建表既有歸類，以免同一國家的機場出現不一致。
+  // 埃及歸中東、墨西哥歸北美（依 IATA）；PR／GU／PA 之分區沿用內建表既有歸類，以免同一國家的機場出現不一致。
   var COUNTRY_ZONE = (function(){
     var m = {};
     function put(area, sub, list){ list.split(" ").forEach(function(c){ m[c] = [area, sub]; }); }
-    put(1,"NAM","US CA PM GL");
-    put(1,"CAM","MX BZ CR SV GT HN NI PA");
+    put(1,"NAM","US CA MX PM GL");
+    put(1,"CAM","BZ CR SV GT HN NI PA");
     put(1,"CAR","AI AG AW BS BB BM VG KY CU DM DO GD GP HT JM MQ MS CW SX BQ KN LC VC TT TC PR VI BL MF");
     put(1,"SAM","AR BO BR CL CO EC PY PE UY VE FK GY SR GF");
     put(2,"EUR","AL DZ AD AM AT AZ BY BE BA BG HR CY CZ DK EE FO FI FR GE DE GI GR HU IS IE IT LV LI LT LU MK MT MD MC ME MA NL NO PL PT RO SM RS SK SI ES SE CH TN TR UA GB XK GG JE IM VA AX SJ");
@@ -1063,7 +1063,9 @@
   // nodes yet) so recompute() can render one journey or many identically. ----------
   // 涉美加認定（14 CFR 399.87／CTA）：看「整張票」的起點、終點與停留（折返）點，
   // 純轉機點不計入；全票判斷一次，各段行程沿用，不因停留分段而各自重算。
-  function isUSCA(code){ var p = lookup(code); return !!(p && (p.country === "US" || p.country === "CA")); }
+  // 美國屬地（關島 GU、北馬里亞納／塞班 MP、波多黎各 PR、美屬維京群島 VI、美屬薩摩亞 AS、美國本土外小島 UM）視同美國點。
+  var USCA_COUNTRIES = {US:1, CA:1, GU:1, MP:1, PR:1, VI:1, AS:1, UM:1};
+  function isUSCA(code){ var p = lookup(code); return !!(p && p.country && USCA_COUNTRIES[p.country]); }
   function computeTicketUS(raw){
     var norm = function(c){ return (c||"").trim().toUpperCase(); };
     var segs = raw.filter(function(s){ return s.dep || s.arr; });
@@ -1083,7 +1085,7 @@
     var hit = pts.filter(isUSCA);
     var transit = all.filter(function(c){ return pts.indexOf(c) === -1 && isUSCA(c); });
     var html = "整張票的起點／終點／停留（折返）點為 " + pts.map(esc).join("、") + "，其中" +
-      (hit.length ? "<b>含美國／加拿大點</b>（" + hit.map(esc).join("、") + "）" : "<b>不含美國／加拿大點</b>") +
+      (hit.length ? "<b>含美國／加拿大點（含美國屬地）</b>（" + hit.map(esc).join("、") + "）" : "<b>不含美國／加拿大點</b>") +
       (transit.length ? "；" + transit.map(esc).join("、") + " 僅為轉機點，不計入" : "") +
       (assumed ? "（本票為來回行程但未勾選任何停留點，無法辨識折返點，暫將所有中途點都視為可能的折返點；若其中有純轉機點，請勾選實際停留點後重新判定）" : "");
     return {touches: hit.length > 0, html: html};
