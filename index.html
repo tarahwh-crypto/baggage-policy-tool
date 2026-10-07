@@ -898,9 +898,10 @@
   }
   // 與 JX 有 codeshare 合作的航空公司；其餘為單純 interline，適用 DOT／IATA 標準規則。
   var CODESHARE_PARTNERS = {AS:1, AA:1, EY:1};
-  // 與 JX 簽有 interline 合約的航空公司（依《聯航作業說明》General 分頁，2026/09/18 版）。
+  // 與 JX 簽有 MITA／BITA（bag through tag、one stock ticket）的航空公司，依《聯航作業說明》General 分頁「MITA / BITA」列（2026/09/18 版）。
+  // IT（台灣虎航）、TR（酷航）雖列於表中但該列為 ✗，故不在名單內。
   var INTERLINE_PARTNERS = {};
-  "AS AA QS AY CI AE BR B7 IT NX HX HB HO MF CX MU FM JL NU NH WY QR EY EK TK GF ET AI MH TG PG PR VN GA TR QF TN".split(" ").forEach(function(c){ INTERLINE_PARTNERS[c] = 1; });
+  "AS AA QS AY CI AE BR B7 NX HX HB HO MF CX MU FM JL NU NH WY QR EY EK TK GF ET AI MH TG PG PR VN GA QF TN".split(" ").forEach(function(c){ INTERLINE_PARTNERS[c] = 1; });
   function renderRules(){
     rulesBody.innerHTML = "";
     rules.forEach(function(r){
@@ -1317,7 +1318,7 @@
     });
 
     // 四碼航班號常見於 codeshare；若未填營運航空公司，codeshare 認定與費率判定可能因此失準，提醒人工確認。
-    // 無 interline 合約之航空公司：提醒直掛原則與責任歸屬。
+    // 未簽 MITA／BITA 之航空公司：提醒直掛原則與責任歸屬。
     var noAgreement = [];
     raw.forEach(function(s){
       [s.mkt, s.op].forEach(function(cd){
@@ -1330,7 +1331,7 @@
       na.className = "diverge-note";
       na.style.marginTop = "0";
       na.style.marginBottom = "12px";
-      na.textContent = "⚠ " + noAgreement.join("、") + " 與 JX 無 interline 合約：非同一本機票原則上不予行李直掛；若仍予直掛，後續行李問題將由直掛航空公司 100% 承擔。";
+      na.textContent = "⚠ " + noAgreement.join("、") + " 與 JX 未簽 MITA／BITA：非同一本機票原則上不予行李直掛；若仍予直掛，後續行李問題將由直掛航空公司 100% 承擔。";
       resultsContainer.insertBefore(na, resultsContainer.firstChild);
     }
 
