@@ -447,14 +447,15 @@
           <th class="col-op">營運航空公司(OC)（選填）</th>
           <th>航班號（選填）</th>
           <th class="col-date">日期（選填）</th>
-          <th class="col-brk">到達地停留<br>（斷點）</th>
+          <th class="col-brk">抵達地停留<br>（斷點）</th>
           <th class="col-del"></th>
         </tr>
       </thead>
       <tbody id="segBody"></tbody>
     </table>
     </div>
-    <p class="step-desc" style="margin-top:8px;font-size:12px;">「到達地停留（斷點）」：若此航段到達地為實際停留點（非單純轉機），行程會從此處分成不同「段」，免費行李額度／超額行李費率將分段各自判定（例如去程與回程分開判定）。貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際有停留的目的地。</p>
+    <p class="step-desc" style="margin:8px 0 4px;font-size:12.5px;">貼上含 O／X 標記的訂位系統文字時，工具會自動依 O（停留）／X（轉機）勾選；手動輸入時請自行勾選實際停留 24 小時以上的抵達地。</p>
+<p class="step-desc" style="margin:0 0 16px;font-size:11.5px;font-style:italic;">「抵達地停留（斷點）」：若此航段抵達地為實際停留點（非單純轉機），行程會從此處分成不同「段」，免費行李額度／超額行李費率將分段各自判定（例如去程與回程分開判定）。</p>
 
     <div class="row-actions">
       <button id="addRow">＋ 新增航段</button>
@@ -822,7 +823,7 @@
       '<td><input class="cell" data-f="op" maxlength="2" placeholder="選填" value="'+(data.op||"")+'"></td>'+
       '<td><input class="cell" data-f="flt" placeholder="選填" value="'+(data.flt||"")+'"></td>'+
       '<td><input class="cell" data-f="date" placeholder="選填" value="'+(data.date||"")+'"></td>'+
-      '<td class="col-brk cell-chk-cell"><input type="checkbox" class="cell-chk" data-f="brk" title="到達地為停留點（斷點），行程從此分段"'+(data.brk?" checked":"")+'></td>'+
+      '<td class="col-brk cell-chk-cell"><input type="checkbox" class="cell-chk" data-f="brk" title="抵達地為停留點（斷點），行程從此分段"'+(data.brk?" checked":"")+'></td>'+
       '<td class="col-del"><button class="icon-del" title="刪除此航段" aria-label="刪除此航段">✕</button></td>';
     tr.querySelectorAll("input").forEach(function(inp){
       if(inp.type === "checkbox") return;
@@ -1218,7 +1219,7 @@
     return {touchesUS:touchesUS, traceItems:traceItems, unknown:unknown, allocOut:allocOut, feeOut:feeOut};
   }
 
-  // Split raw segment rows into journeys at "到達地停留（斷點）" checkboxes.
+  // Split raw segment rows into journeys at "抵達地停留（斷點）" checkboxes.
   // A checked box on segment i means: segment i is the LAST segment of its
   // journey, and segment i+1 (arriving/departing the same airport) starts a
   // new journey. No breaks at all → exactly one journey (fully backward
@@ -1363,7 +1364,7 @@
       // 表格標題列（截圖 OCR 常會抽出欄位名稱）直接略過，不列為解析失敗。
       if(/^#/.test(line) || /DEP\.?\s*LOCATION/i.test(line) || /ARR\.?\s*LOCATION/i.test(line)) return;
       // ARNK（surface sector，旅客自行地面移動）不是搭機航段，略過不算失敗。
-      if(/\bARNK\b/i.test(line)){ if(rows.length) rows[rows.length-1].brk = true; return; } // 地面段代表行程在此中斷，前一航段的到達地視為斷點
+      if(/\bARNK\b/i.test(line)){ if(rows.length) rows[rows.length-1].brk = true; return; } // 地面段代表行程在此中斷，前一航段的抵達地視為斷點
       // 整行沒有任何 3 碼機場代碼就不可能是航段（多半是被 OCR 打散的表頭），略過不算失敗。
       if(!/(^|\s)[A-Z]{3}(\s|$)/.test(line.toUpperCase())) return;
       var tokens = line.split(/\s+/).filter(Boolean).map(function(t){ return t.toUpperCase(); });
@@ -1379,7 +1380,7 @@
       var arr = tokens[idx];
       if(!/^[A-Z]{3}$/.test(arr)){ failed.push({line:lineNo, reason:"無法辨識目的地機場代碼"}); return; }
       idx++;
-      // 到達地停留標記（O／X）；承運人代碼至少 2 碼，故此位置若是單一字元或純符號，一律視為標記或 OCR 雜訊（如 0、-、[¢]）略過。
+      // 抵達地停留標記（O／X）；承運人代碼至少 2 碼，故此位置若是單一字元或純符號，一律視為標記或 OCR 雜訊（如 0、-、[¢]）略過。
       var stopMark = "";
       // 以「後面兩個 token 是否為承運人＋航班號」判斷目前這個 token 是不是停留標記，
       // 這樣 OCR 把 X 讀成 Xx、把 O 讀成 0 或 [¢] 時也不會被誤當成承運人代碼。
@@ -1483,7 +1484,7 @@
       } else {
         arr = "";
         brk = false;
-        failed.push({line:p.lineNo, reason:"這是行程最後一段，但找不到最終到達地（訂位系統文字結尾通常會單獨列出一個機場代碼），請手動補上到達地"});
+        failed.push({line:p.lineNo, reason:"這是行程最後一段，但找不到最終抵達地（訂位系統文字結尾通常會單獨列出一個機場代碼），請手動補上抵達地"});
       }
       rows.push({dep:p.airport, arr:arr, mkt:p.mkt, op:p.op, flt:p.flt, date:p.date, brk:brk, dateUnclear:p.dateUnclear});
     }
@@ -1530,7 +1531,7 @@
     }
     var unclearCount = result.rows.filter(function(r){ return r.stopUnclear; }).length;
     var fixCount = result.rows.filter(function(r){ return r.needsCheck; }).length; var dateCount = result.rows.filter(function(r){ return r.dateUnclear; }).length;
-    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "") + (unclearCount ? "；有 "+unclearCount+" 段的停留標記是 OCR 推測或未讀到（O 常被讀成 0，或整格漏讀），請務必核對「到達地停留（斷點）」勾選是否正確" : "") + (fixCount ? "；有 "+fixCount+" 段的承運人／航班號為 OCR 推測或無法辨識（空白欄已用紅框標示），請點「編輯航段」核對補齊後重新判定" : "") + (dateCount ? "；【未完全解析】有 "+dateCount+" 段的日期無法辨識（已留空），已先依航段完成判定，請視需要點「編輯航段」補填日期" : "");
+    var msg = "已解析出 "+result.rows.length+" 個航段並完成判定" + (brkCount ? "（依 O 停留標記自動分成 "+(brkCount+1)+" 段行程）" : "") + (unclearCount ? "；有 "+unclearCount+" 段的停留標記是 OCR 推測或未讀到（O 常被讀成 0，或整格漏讀），請務必核對「抵達地停留（斷點）」勾選是否正確" : "") + (fixCount ? "；有 "+fixCount+" 段的承運人／航班號為 OCR 推測或無法辨識（空白欄已用紅框標示），請點「編輯航段」核對補齊後重新判定" : "") + (dateCount ? "；【未完全解析】有 "+dateCount+" 段的日期無法辨識（已留空），已先依航段完成判定，請視需要點「編輯航段」補填日期" : "");
     if(result.failed.length){
       var lineNos = result.failed.map(function(f){ return f.line; }).join("、");
       return {ok:true, cls:"err", message: msg+"，另有第 "+lineNos+" 行無法辨識（下方已用紅框標示），請點「編輯航段」解鎖後手動核對或補充。"};
