@@ -505,7 +505,7 @@
         <details class="adv">
           <summary>進階：地區 / 分區對照（供 MSC 跨區判定使用）</summary>
           <div class="adv-body">
-            機場地區分類採 IATA 三大區（Area 1 美洲／Area 2 歐非中東／Area 3 亞太）及其下分區。內建約 130 個常用機場，若查無代碼，判定過程會標示「未收錄」，請在下方手動指定該機場所屬 Area／分區後重新計算。分區依 IATA Resolution 302 之 Area 3 細分：日本／韓國自成一區；中國（含港澳）、台灣、蒙古與東南亞各國同屬「東南亞」分區；印度、巴基斯坦、孟加拉、斯里蘭卡、尼泊爾等屬「南亞次大陸」分區。故如 TPE-BKK 屬同分區內航段，BKK-DEL 才是跨分區航段。正式作業請以 SOP 對照表為準。
+            機場地區分類採 IATA 三大區（Area 1 美洲／Area 2 歐非中東／Area 3 亞太）及其下分區。機場所屬國家由線上公開機場資料庫查得（約 9,000 個 IATA 機場／城市代碼，另內建常用機場作為離線備援），再依 IATA「國家 → Area／分區」對照規則歸類；俄羅斯以烏拉山為界（約東經 60 度）分屬 Area 2／Area 3。若代碼查無資料，該段行程不輸出判定結果，請確認代碼是否正確。分區依 IATA Resolution 302 之 Area 3 細分：日本／韓國自成一區；中國（含港澳）、台灣、蒙古與東南亞各國同屬「東南亞」分區；印度、巴基斯坦、孟加拉、斯里蘭卡、尼泊爾等屬「南亞次大陸」分區。故如 TPE-BKK 屬同分區內航段，BKK-DEL 才是跨分區航段。正式作業請以 SOP 對照表為準。
             <div id="unknownAirports" style="margin-top:8px;"></div>
           </div>
         </details>
@@ -602,13 +602,117 @@
     JPK:"日韓",SEA:"東南亞",SAS:"南亞次大陸",SWP:"西南太平洋"
   };
 
+  // ---------- IATA 國家 → Area／分區 規則表 ----------
+  // IATA 的 Area（TC1/2/3）與分區是以「國家」定義，因此這裡只維護國家對照規則；
+  // 機場屬於哪個國家，改由線上公開機場資料庫即時查得（見 loadAirportData），不再逐一寫死機場。
+  // 上方 AIRPORTS 內建表僅保留作為離線備援，且優先採用（維持既有判定結果不變）。
+  // MX／EG／PR／GU／PA 之分區沿用內建表既有歸類，以免同一國家的機場出現不一致。
+  var COUNTRY_ZONE = (function(){
+    var m = {};
+    function put(area, sub, list){ list.split(" ").forEach(function(c){ m[c] = [area, sub]; }); }
+    put(1,"NAM","US CA PM GL");
+    put(1,"CAM","MX BZ CR SV GT HN NI PA");
+    put(1,"CAR","AI AG AW BS BB BM VG KY CU DM DO GD GP HT JM MQ MS CW SX BQ KN LC VC TT TC PR VI BL MF");
+    put(1,"SAM","AR BO BR CL CO EC PY PE UY VE FK GY SR GF");
+    put(2,"EUR","AL DZ AD AM AT AZ BY BE BA BG HR CY CZ DK EE FO FI FR GE DE GI GR HU IS IE IT LV LI LT LU MK MT MD MC ME MA NL NO PL PT RO SM RS SK SI ES SE CH TN TR UA GB XK GG JE IM VA AX SJ");
+    put(2,"MEA","BH IR IQ IL JO KW LB OM PS QA SA SD SY AE YE");
+    put(2,"AFR","EG AO BJ BW BF BI CM CV CF TD KM CG CD CI DJ GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU YT MZ NA NE NG RE RW SH ST SN SC SL SO ZA SS TZ TG UG ZM ZW EH");
+    put(3,"JPK","JP KR KP");
+    put(3,"SEA","TW HK MO CN MN TH SG MY ID PH VN MM KH LA BN TL KZ KG TJ TM UZ CX CC MP FM MH PW");
+    put(3,"SAS","IN LK BD NP PK MV BT AF");
+    put(3,"SWP","AU NZ FJ GU PG NC AS CK PF KI NR NU WS SB TO TV VU WF NF TK");
+    return m;
+  })();
+
+  // 俄羅斯以烏拉山為界：以西屬 Area 2 歐洲、以東屬 Area 3（以機場經度約東經 60 度概分）。
+  function zoneOf(country, lon){
+    if(country === "RU") return (lon != null && lon >= 60) ? [3,"SEA"] : [2,"EUR"];
+    return COUNTRY_ZONE[country] || null;
+  }
+
+  // ---------- 線上機場資料庫（IATA 機場／城市代碼 → 國家） ----------
+  var AIRPORT_DATA_URL = "https://cdn.jsdelivr.net/gh/lxndrblz/Airports@main/airports.csv";
+  var AIRPORT_CACHE_KEY = "bpt.airports.v1";
+  var AIRPORT_CACHE_DAYS = 7;
+  var liveAirports = {};      // code → [country, longitude]
+  var liveState = "loading";  // loading｜ready｜cached｜failed
+  var liveTs = 0;
+
+  function parseAirportCSV(text){
+    var rows = [], row = [], f = "", q = false;
+    for(var i=0;i<text.length;i++){
+      var c = text[i];
+      if(q){
+        if(c === '"'){ if(text[i+1] === '"'){ f += '"'; i++; } else q = false; }
+        else f += c;
+      } else if(c === '"') q = true;
+      else if(c === ","){ row.push(f); f = ""; }
+      else if(c === "\n"){ row.push(f); rows.push(row); row = []; f = ""; }
+      else if(c !== "\r") f += c;
+    }
+    if(f || row.length){ row.push(f); rows.push(row); }
+    var head = rows[0] || [];
+    var iCode = head.indexOf("code"), iCity = head.indexOf("city_code"), iCtry = head.indexOf("country"), iLon = head.indexOf("longitude");
+    if(iCode < 0 || iCtry < 0) throw new Error("unexpected airport data format");
+    var map = {}, cities = {};
+    for(var r=1;r<rows.length;r++){
+      var x = rows[r];
+      var code = (x[iCode]||"").trim().toUpperCase(), ctry = (x[iCtry]||"").trim().toUpperCase();
+      if(!/^[A-Z0-9]{3}$/.test(code) || !/^[A-Z]{2}$/.test(ctry)) continue;
+      var lon = iLon >= 0 ? parseFloat(x[iLon]) : NaN;
+      var rec = [ctry, isNaN(lon) ? null : Math.round(lon*10)/10];
+      map[code] = rec;
+      var city = iCity >= 0 ? (x[iCity]||"").trim().toUpperCase() : "";
+      if(/^[A-Z0-9]{3}$/.test(city) && !cities[city]) cities[city] = rec;
+    }
+    // 城市代碼（如 TYO／NYC／LON）也可查詢；與機場代碼相同時以機場為準。
+    Object.keys(cities).forEach(function(k){ if(!map[k]) map[k] = cities[k]; });
+    return map;
+  }
+
+  function loadAirportData(){
+    var cache = null;
+    try{ cache = JSON.parse(localStorage.getItem(AIRPORT_CACHE_KEY) || "null"); }catch(e){ cache = null; }
+    if(cache && cache.map && cache.ts){
+      liveAirports = cache.map; liveTs = cache.ts; liveState = "cached";
+      if(Date.now() - cache.ts < AIRPORT_CACHE_DAYS*864e5) return;
+    }
+    if(!window.fetch){ if(liveState === "loading") liveState = "failed"; return; }
+    fetch(AIRPORT_DATA_URL).then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.text();
+    }).then(function(text){
+      var map = parseAirportCSV(text);
+      if(Object.keys(map).length < 1000) throw new Error("airport data too small");
+      liveAirports = map; liveTs = Date.now(); liveState = "ready";
+      try{ localStorage.setItem(AIRPORT_CACHE_KEY, JSON.stringify({ts:liveTs, map:map})); }catch(e){}
+      recompute();
+    }).catch(function(){
+      if(liveState === "loading") liveState = "failed";
+      recompute();
+    });
+  }
+
+  function airportStatusHTML(){
+    if(liveState === "loading") return '<span class="badge unconfirmed">機場資料載入中</span> 正在連線線上機場資料庫…';
+    if(liveState === "failed") return '<span class="badge unconfirmed">線上機場資料庫無法連線</span> 目前僅能判定內建常用機場，其餘機場會顯示查無資料。';
+    return '<span class="badge confirmed">線上機場資料庫已載入</span> 共 '+Object.keys(liveAirports).length+' 個機場／城市代碼'+(liveTs ? "（資料取得日 "+new Date(liveTs).toLocaleDateString()+"）" : "")+"。";
+  }
+
   function lookup(code){
     code = (code||"").trim().toUpperCase();
     if(!code) return null;
     var a = AIRPORTS[code];
-    if(!a) return {code:code, area:null, subarea:null, country:null, unknown:true};
-    return {code:code, area:a[0], subarea:a[1], country:a[2], unknown:false};
+    if(a) return {code:code, area:a[0], subarea:a[1], country:a[2], unknown:false};
+    var d = liveAirports[code];
+    if(d){
+      var z = zoneOf(d[0], d[1]);
+      if(z) return {code:code, area:z[0], subarea:z[1], country:d[0], unknown:false};
+      return {code:code, area:null, subarea:null, country:d[0], unknown:true};
+    }
+    return {code:code, area:null, subarea:null, country:null, unknown:true};
   }
+  loadAirportData();
 
   // ---------- Carrier exception rules (Step 3, editable) ----------
   // allocUS/feeUS apply when the itinerary touches a US/Canada point (DOT/CTA
@@ -954,6 +1058,16 @@
       });
     });
 
+    var zoneSeen = {}, zoneParts = [];
+    csegs.forEach(function(s){
+      [s.dep,s.arr].forEach(function(pt){
+        if(!pt || zoneSeen[pt.code]) return;
+        zoneSeen[pt.code] = true;
+        zoneParts.push("<b>"+esc(pt.code)+"</b>（"+(pt.unknown ? "查無資料" : esc(pt.country)+"｜"+AREA_NAME[pt.area]+"・"+(SUBAREA_NAME[pt.subarea]||pt.subarea))+"）");
+      });
+    });
+    if(zoneParts.length) traceItems.push({label:"機場所屬 Area／分區", html: zoneParts.join("、")});
+
     var touchesUS = csegs.some(function(s){
       return (s.dep&&(s.dep.country==="US"||s.dep.country==="CA")) ||
              (s.arr&&(s.arr.country==="US"||s.arr.country==="CA"));
@@ -1051,6 +1165,16 @@
       traceItems.push({label:"等待輸入", html:"請於步驟 1 貼上行程文字，或點「＋ 新增航段」手動輸入。"});
     }
 
+    // 防呆：只要有機場查無資料，跨區比對就不可靠，寧可不輸出結果也不給出看似確定的答案。
+    if(unknown.length){
+      var why = liveState === "loading"
+        ? "機場資料載入中，請稍候"
+        : "機場代碼 "+unknown.map(esc).join("、")+" 查無資料"+(liveState === "failed" ? "（線上機場資料庫無法連線，目前僅能判定內建常用機場）" : "")+"，無法判定，請確認代碼是否正確";
+      allocOut = {carrier:null, note:why, confirmed:false};
+      feeOut = {carrier:null, note:why, confirmed:false};
+      traceItems.push({label:"無法判定", html: why+"。為避免誤判，本段行程不輸出判定結果。"});
+    }
+
     return {touchesUS:touchesUS, traceItems:traceItems, unknown:unknown, allocOut:allocOut, feeOut:feeOut};
   }
 
@@ -1083,7 +1207,7 @@
     var unknownBox = document.getElementById("unknownAirports");
     resultsContainer.innerHTML = "";
     traceContainer.innerHTML = "";
-    unknownBox.innerHTML = "";
+    unknownBox.innerHTML = airportStatusHTML();
 
     if(!raw.length){
       resultsContainer.innerHTML = '<div class="result-grid">' +
@@ -1151,7 +1275,7 @@
     }
 
     if(allUnknown.length){
-      unknownBox.innerHTML = '<span class="badge unconfirmed">未收錄機場</span> '+allUnknown.join("、")+' — 判定過程將略過涉及這些機場的跨區比對，結果僅供參考。';
+      unknownBox.innerHTML = airportStatusHTML() + '<br><span class="badge unconfirmed">查無資料</span> '+allUnknown.map(esc).join("、")+' — 涉及這些機場的行程段不輸出判定結果，請確認代碼是否正確。';
     }
   }
 
