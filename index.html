@@ -389,6 +389,99 @@ html:not([lang="en"]) .i18n-en{display:none;}
 .lang-switch a{color:var(--ink-dim);text-decoration:none;font-weight:600;}
 .lang-switch a:hover{color:var(--accent);}
 html[lang="en"] .lang-switch a[data-l="en"], html:not([lang="en"]) .lang-switch a[data-l="zh"]{color:var(--accent);text-decoration:underline;text-underline-offset:3px;}
+
+/* ===== 版面比照「超額行李費試算工具」，主色改用星宇企業棕 #976A4D（如需改用 #84754C，只要改下方 --brown 三個色碼） ===== */
+:root:root:root{
+--brown:#976a4d; --brown-2:#7f573f; --brown-3:#b08766; --gold:#ffe9d2; --link:#7d563d;
+--paper:#f7f5f2; --panel:#ffffff; --ink:#2b2622; --ink-dim:#6f665e;
+--line:#e4ddd5; --line-soft:#efeae4;
+--accent:#976a4d; --accent-ink:#ffffff; --accent-soft:#f6eee8;
+--warn:#9a6b0c; --warn-soft:#fdf1d6; --warn-line:#9a6b0c;
+--good:#28734f; --good-soft:#e5f2ea; --bad:#a3372f; --bad-soft:#fbeae8;
+--mono-bg:#f6f2ee; --focus:#976a4d;
+--shadow:0 1px 2px rgba(127,87,63,.07);
+--font-body:'Microsoft JhengHei',-apple-system,BlinkMacSystemFont,'PingFang TC','Segoe UI',Roboto,sans-serif;
+}
+html{overflow-x:clip;}
+body{font-family:var(--font-body);line-height:1.55;padding-block:0 60px;}
+.wrap{max-width:880px;}
+
+header.page{
+position:relative;overflow:hidden;color:#fff;
+background:linear-gradient(160deg,var(--brown-2) 0%,var(--brown) 100%);
+margin:0 calc(50% - 50vw) 0;padding:30px calc(50vw - 50%) 46px;
+}
+header.page::after{
+content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;
+background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.10),transparent 70%);pointer-events:none;
+}
+header.page .eyebrow{
+font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--gold);
+margin:0 0 8px;min-height:34px;position:relative;z-index:1;
+}
+header.page .eyebrow .dot{display:none;}
+header.page h1{font-size:clamp(21px,3.6vw,28px);line-height:1.2;font-weight:700;margin:0 0 8px;color:#fff;letter-spacing:0;}
+header.page .sub{color:#fbf1e8;font-size:13.5px;max-width:560px;margin:0;}
+
+.lang-switch{
+margin-left:auto;display:flex;gap:0;flex-shrink:0;border:1px solid rgba(255,255,255,.5);border-radius:999px;
+overflow:hidden;letter-spacing:0;text-transform:none;font-size:12.5px;
+}
+.lang-switch span{display:none;}
+.lang-switch a, .lang-switch a:hover{padding:7px 14px;color:#fbf1e8;font-weight:700;text-decoration:none;line-height:1.4;}
+html[lang="en"] .lang-switch a[data-l="en"], html:not([lang="en"]) .lang-switch a[data-l="zh"]{background:#fff;color:var(--brown);text-decoration:none;}
+
+.banner{
+position:relative;z-index:1;margin:-22px 0 16px;border-color:var(--warn);color:var(--ink);
+font-size:12.5px;border-radius:10px;align-items:flex-start;
+}
+.banner svg{color:var(--warn);}
+
+section.step{border-radius:14px;padding:20px 20px 22px;margin-bottom:16px;}
+.step-head{align-items:center;gap:8px;}
+.step-num{width:20px;height:20px;border-radius:50%;font-family:var(--font-body);font-size:11px;font-weight:700;}
+.step-title{font-size:13.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-dim);}
+.step-desc{font-size:12.5px;}
+
+.ocr-box{border:1px solid var(--line);border-radius:10px;background:var(--paper);}
+summary.ocr-summary::before, details.adv summary::before{color:var(--link);}
+
+.row-actions button, .ocr-row button, #toggleEditSeg{
+border-radius:999px;padding:9px 15px;font-size:13.5px;font-weight:600;background:var(--panel);border:1px solid var(--line);color:var(--ink);
+}
+.row-actions button:hover, .ocr-row button:hover, #toggleEditSeg:hover{border-color:var(--brown-3);color:var(--brown);}
+.ocr-row button.primary, .ocr-row button.primary:hover{background:var(--brown);border-color:var(--brown);color:#fff;filter:none;}
+.ocr-row input[type=file]::file-selector-button{border-radius:999px;background:var(--panel);}
+.ocr-row input[type=file]::file-selector-button:hover{border-color:var(--brown-3);color:var(--brown);}
+input.cell, select.cell, .parse-textarea{border-radius:9px;}
+
+/* 判定結果：比照試算工具的結果區塊（深色底、金色重點） */
+.result-card{
+background:linear-gradient(160deg,var(--brown-2) 0%,var(--brown) 100%);border:none;color:#fff;
+border-radius:14px;padding:18px 20px;box-shadow:0 10px 30px rgba(127,87,63,.25);
+}
+.result-carrier{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:#fbf1e8;font-weight:700;}
+.result-carrier .code{font-family:var(--font-body);font-size:clamp(26px,5.5vw,36px);font-weight:800;color:#fff;letter-spacing:.02em;text-transform:none;}
+.result-note{color:#fbf1e8;}
+.result-card a.ref-link{color:#fff;text-decoration:underline;text-underline-offset:3px;}
+.result-card .rule-shot-cap{color:#fbf1e8;}
+.result-card.unconfirmed{background:var(--warn-soft);border:1px solid var(--warn);color:var(--ink);box-shadow:none;}
+.result-card.unconfirmed .result-carrier, .result-card.unconfirmed .result-note{color:var(--ink-dim);}
+.result-card.unconfirmed .result-carrier .code{color:var(--warn);}
+.result-card.unconfirmed a.ref-link{color:var(--link);text-decoration:none;}
+#resultsContainer > .result-note{color:var(--ink-dim);}
+
+a.ref-link, footer.refs a{color:var(--link);}
+.trace-body .cite{color:var(--link);background:var(--accent-soft);}
+.trace-dot{background:var(--brown-3);box-shadow:0 0 0 3px var(--accent-soft);}
+.badge{font-family:var(--font-body);}
+.journey-head, .trace-journey-head{color:var(--ink);}
+footer.refs{font-size:11.5px;line-height:1.6;}
+@media (max-width:520px){ header.page h1{font-size:21px;} }
+body{margin:0;}
+/* 英文版改用拉丁字型優先，避免彎引號被中文字型排成全形寬度 */
+html[lang="en"]:root:root:root{--font-body:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,'Helvetica Neue',Arial,'Microsoft JhengHei',sans-serif;}
+table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
 </style>
 <script>
 // 語言：?lang=en／?lang=zh 優先，其次沿用上次選擇，預設中文。切換語言即重新載入頁面。
@@ -409,7 +502,7 @@ html[lang="en"] .lang-switch a[data-l="en"], html:not([lang="en"]) .lang-switch 
 
 <div class="wrap">
   <header class="page">
-    <div class="eyebrow"><span class="dot"></span>AOD · <span class="i18n-zh">行李政策判定</span><span class="i18n-en">Baggage Policy Finder</span><span class="lang-switch"><a href="?lang=zh" data-l="zh">中文</a><span aria-hidden="true">/</span><a href="?lang=en" data-l="en">English</a></span></div>
+    <div class="eyebrow"><span class="dot"></span>AOD · <span class="i18n-zh">行李政策判定</span><span class="i18n-en">Baggage Policy Finder</span><span class="lang-switch"><a href="?lang=zh" data-l="zh">中文</a><span aria-hidden="true">/</span><a href="?lang=en" data-l="en">EN</a></span></div>
     <h1><span class="i18n-zh">誰的行李政策適用這張票？</span><span class="i18n-en">Whose baggage policy applies to this ticket?</span></h1>
     <p class="sub"><span class="i18n-zh">輸入旅客實際開票行程，本工具將依 IATA MSC 與 DOT FMC 判定邏輯，逐步推算應適用哪一家航空公司的免費行李額度與超額費率。</span><span class="i18n-en">Enter the passenger’s ticketed itinerary. This tool applies the IATA MSC and DOT FMC logic step by step to work out which carrier’s free baggage allowance and excess baggage charge apply.</span></p>
   </header>
