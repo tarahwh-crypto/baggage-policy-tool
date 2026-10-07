@@ -592,7 +592,7 @@
     DXB:[2,"MEA","AE"], AUH:[2,"MEA","AE"], DOH:[2,"MEA","QA"], JED:[2,"MEA","SA"],
     RUH:[2,"MEA","SA"], TLV:[2,"MEA","IL"], AMM:[2,"MEA","JO"], BAH:[2,"MEA","BH"],
     // Africa
-    JNB:[2,"AFR","ZA"], CPT:[2,"AFR","ZA"], CAI:[2,"AFR","EG"], NBO:[2,"AFR","KE"],
+    JNB:[2,"AFR","ZA"], CPT:[2,"AFR","ZA"], CAI:[2,"MEA","EG"], NBO:[2,"AFR","KE"],
     ADD:[2,"AFR","ET"], LOS:[2,"AFR","NG"], CMN:[2,"EUR","MA"]
   };
   var AREA_NAME = {1:"Area 1 美洲",2:"Area 2 歐非中東",3:"Area 3 亞太"};
@@ -606,7 +606,7 @@
   // IATA 的 Area（TC1/2/3）與分區是以「國家」定義，因此這裡只維護國家對照規則；
   // 機場屬於哪個國家，改由線上公開機場資料庫即時查得（見 loadAirportData），不再逐一寫死機場。
   // 上方 AIRPORTS 內建表僅保留作為離線備援，且優先採用（維持既有判定結果不變）。
-  // MX／EG／PR／GU／PA 之分區沿用內建表既有歸類，以免同一國家的機場出現不一致。
+  // 埃及依 IATA 歸中東；MX／PR／GU／PA 之分區沿用內建表既有歸類，以免同一國家的機場出現不一致。
   var COUNTRY_ZONE = (function(){
     var m = {};
     function put(area, sub, list){ list.split(" ").forEach(function(c){ m[c] = [area, sub]; }); }
@@ -615,8 +615,8 @@
     put(1,"CAR","AI AG AW BS BB BM VG KY CU DM DO GD GP HT JM MQ MS CW SX BQ KN LC VC TT TC PR VI BL MF");
     put(1,"SAM","AR BO BR CL CO EC PY PE UY VE FK GY SR GF");
     put(2,"EUR","AL DZ AD AM AT AZ BY BE BA BG HR CY CZ DK EE FO FI FR GE DE GI GR HU IS IE IT LV LI LT LU MK MT MD MC ME MA NL NO PL PT RO SM RS SK SI ES SE CH TN TR UA GB XK GG JE IM VA AX SJ");
-    put(2,"MEA","BH IR IQ IL JO KW LB OM PS QA SA SD SY AE YE");
-    put(2,"AFR","EG AO BJ BW BF BI CM CV CF TD KM CG CD CI DJ GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU YT MZ NA NE NG RE RW SH ST SN SC SL SO ZA SS TZ TG UG ZM ZW EH");
+    put(2,"MEA","BH EG IR IQ IL JO KW LB OM PS QA SA SD SY AE YE");
+    put(2,"AFR","AO BJ BW BF BI CM CV CF TD KM CG CD CI DJ GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU YT MZ NA NE NG RE RW SH ST SN SC SL SO ZA SS TZ TG UG ZM ZW EH");
     put(3,"JPK","JP KR KP");
     put(3,"SEA","TW HK MO CN MN TH SG MY ID PH VN MM KH LA BN TL KZ KG TJ TM UZ CX CC MP FM MH PW");
     put(3,"SAS","IN LK BD NP PK MV BT AF");
@@ -932,6 +932,18 @@
   function pickCarrier(s, basis){ return basis==="op" ? (s.op||s.mkt) : s.mkt; }
 
   function computeMSC(csegs, basis){
+    var r = computeMSCIntl(csegs, basis);
+    if(r) return r;
+    // 全程國內線（同一國家）：無跨區／國際航段可取，改取該段行程第一個航段之承運人。
+    var c0 = csegs.length && csegs[0].dep ? csegs[0].dep.country : null;
+    var allDomestic = !!c0 && csegs.every(function(s){ return s.dep && s.arr && s.dep.country === c0 && s.arr.country === c0; });
+    if(allDomestic){
+      return {carrier:pickCarrier(csegs[0], basis || "mkt"), index:0, tier:"domestic", note:"全程為同一國家之國內線，取第一個航段（取"+(basis==="op" ? "營運航空公司" : "售票航空公司")+"）"};
+    }
+    return null;
+  }
+
+  function computeMSCIntl(csegs, basis){
     basis = basis || "mkt";
     var touchedAreas = {};
     csegs.forEach(function(s){
@@ -1049,7 +1061,35 @@
   // ---------- Core determination for ONE journey (a run of segments with no
   // stopover break in between). Returns trace items as plain data (not DOM
   // nodes yet) so recompute() can render one journey or many identically. ----------
-  function determineJourney(csegs, ticketCsegs){
+  // 涉美加認定（14 CFR 399.87／CTA）：看「整張票」的起點、終點與停留（折返）點，
+  // 純轉機點不計入；全票判斷一次，各段行程沿用，不因停留分段而各自重算。
+  function isUSCA(code){ var p = lookup(code); return !!(p && (p.country === "US" || p.country === "CA")); }
+  function computeTicketUS(raw){
+    var norm = function(c){ return (c||"").trim().toUpperCase(); };
+    var segs = raw.filter(function(s){ return s.dep || s.arr; });
+    if(!segs.length) return {touches:false, html:"尚未輸入行程"};
+    var pts = [], all = [];
+    var add = function(list, c){ c = norm(c); if(c && list.indexOf(c) === -1) list.push(c); };
+    var first = norm(segs[0].dep), last = norm(segs[segs.length-1].arr);
+    var hasBrk = false;
+    add(pts, first);
+    segs.forEach(function(s, i){ if(s.brk && i < segs.length-1){ hasBrk = true; add(pts, s.arr); } });
+    var fp = lookup(first), lp = lookup(last);
+    var roundTrip = segs.length > 1 && fp && lp && !fp.unknown && !lp.unknown && fp.country === lp.country;
+    var assumed = roundTrip && !hasBrk;
+    if(assumed){ segs.forEach(function(s, i){ if(i < segs.length-1) add(pts, s.arr); }); }
+    add(pts, last);
+    segs.forEach(function(s){ add(all, s.dep); add(all, s.arr); });
+    var hit = pts.filter(isUSCA);
+    var transit = all.filter(function(c){ return pts.indexOf(c) === -1 && isUSCA(c); });
+    var html = "整張票的起點／終點／停留（折返）點為 " + pts.map(esc).join("、") + "，其中" +
+      (hit.length ? "<b>含美國／加拿大點</b>（" + hit.map(esc).join("、") + "）" : "<b>不含美國／加拿大點</b>") +
+      (transit.length ? "；" + transit.map(esc).join("、") + " 僅為轉機點，不計入" : "") +
+      (assumed ? "（本票為來回行程但未勾選任何停留點，無法辨識折返點，暫將所有中途點都視為可能的折返點；若其中有純轉機點，請勾選實際停留點後重新判定）" : "");
+    return {touches: hit.length > 0, html: html};
+  }
+
+  function determineJourney(csegs, ticketCsegs, ticketUS){
     var traceItems = [];
     var unknown = [];
     csegs.forEach(function(s){
@@ -1068,16 +1108,14 @@
     });
     if(zoneParts.length) traceItems.push({label:"機場所屬 Area／分區", html: zoneParts.join("、")});
 
-    var touchesUS = csegs.some(function(s){
-      return (s.dep&&(s.dep.country==="US"||s.dep.country==="CA")) ||
-             (s.arr&&(s.arr.country==="US"||s.arr.country==="CA"));
-    });
+    var usInfo = ticketUS || {touches:false, html:""};
+    var touchesUS = usInfo.touches;
 
     traceItems.push({label:"起訖點判斷", html:
-      "行程中" + (touchesUS?"<b>含美國／加拿大機場</b>":"<b>未含美國／加拿大機場</b>") +
+      usInfo.html +
       "。" + (touchesUS
         ? '依 <span class="cite">14 CFR § 399.87</span> 及 CTA 對應規則，DOT 預設以「整張機票」第一個航段的售票航空公司（FMC）全程適用（不因停留分段而重算），但各承運人可能於 interline 協議中另行約定。'
-        : "未觸及美加，DOT／CTA 管轄不適用，預設以 IATA MSC 基準判定，但各承運人仍可能另有約定。")
+        : "起點／終點／停留點均未涉美加，DOT／CTA 規定不適用，預設以 IATA MSC 基準判定，但各承運人仍可能另有約定。")
     });
 
     // FMC 依 14 CFR 399.87／CTA：看「整張機票」的第一個航段，停留分段不重新計算；
@@ -1222,10 +1260,11 @@
     var multi = journeysRaw.length > 1;
     var allUnknown = [];
 
+    var ticketUS = computeTicketUS(raw); // 涉美加：整張票判斷一次
     var ticketCsegs = raw.map(classifySeg); // 整張票的航段（FMC 用，停留分段不重算）
     journeysRaw.forEach(function(rawSegs, ji){
       var csegs = rawSegs.map(classifySeg);
-      var result = determineJourney(csegs, ticketCsegs);
+      var result = determineJourney(csegs, ticketCsegs, ticketUS);
       result.unknown.forEach(function(code){ if(allUnknown.indexOf(code)===-1) allUnknown.push(code); });
 
       if(multi){
@@ -1245,6 +1284,13 @@
         resultCardHTML("免費託運行李額度", result.allocOut.carrier, result.allocOut.note, result.allocOut.confirmed) +
         resultCardHTML("超額行李費率", result.feeOut.carrier, result.feeOut.note, result.feeOut.confirmed);
       resultsContainer.appendChild(grid);
+      if(result.allocOut.carrier && /MSC/.test(result.allocOut.note + result.feeOut.note)){
+        var s34 = document.createElement("div");
+        s34.className = "result-note";
+        s34.style.marginTop = "8px";
+        s34.textContent = "註：若 MSC 未公告本行程之行李規定，依 IATA Res 302 改適用報到航空公司之規定；報到航空公司亦未公告時，逐段適用各營運航空公司之規定。";
+        resultsContainer.appendChild(s34);
+      }
 
       if(result.allocOut.carrier && result.feeOut.carrier && result.allocOut.carrier!==result.feeOut.carrier){
         var dn = document.createElement("div");
