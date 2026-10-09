@@ -597,6 +597,7 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
     <span class="i18n-zh">參考依據：</span><span class="i18n-en">References:</span>
     <ul>
       <li><span class="i18n-zh">《聯航作業說明 Interline Service Instruction》（更新 2026/09/18）「Baggage Information for Codeshare Flight」分頁 — AS／AA／EY 之 FBA、EB Charge 判定規則與逐條範例，為例外規則表之主要依據</span><span class="i18n-en">Interline Service Instruction (updated 2026/09/18), “Baggage Information for Codeshare Flight” tab — FBA and EB charge rules and worked examples for AS / AA / EY; the main basis for the carrier rule table</span></li>
+      <li><span class="i18n-zh">《JX-AS Codeshare Policies and Procedures Manual》（2024/08/19）— 行程含 JX／AS codeshare 航班（JX*／AS 營運或 AS*／JX 營運）時，行李政策一律適用 JX，優先於 AS 之 MSC-OC 內規</span><span class="i18n-en">JX-AS Codeshare Policies and Procedures Manual (2024/08/19) — when the itinerary includes a JX/AS codeshare flight (JX* operated by AS, or AS* operated by JX), the baggage policy always follows JX, taking precedence over the AS MSC-OC house rule</span></li>
       <li><span class="i18n-zh">14 CFR § 399.87 — 美國出發／抵達行程之行李額度與費用，DOT 預設適用行程第一段之售票航空公司（Marketing Carrier, MC）政策；<a href="https://www.ecfr.gov/current/title-14/chapter-II/subchapter-F/part-399/subpart-G/section-399.87" target="_blank" rel="noopener">eCFR 條文</a></span><span class="i18n-en">14 CFR § 399.87 — baggage allowances and fees for itineraries to or from the US: the DOT default applies the policy of the marketing carrier (MC) of the first segment; <a href="https://www.ecfr.gov/current/title-14/chapter-II/subchapter-F/part-399/subpart-G/section-399.87" target="_blank" rel="noopener">eCFR text</a></span></li>
       <li><span class="i18n-zh">IATA Resolution 302 — Most Significant Carrier（MSC）判定：依「跨 Area → 跨分區 → 同分區內第一個國際航段」順序，取該航段之售票航空公司（2015 年 4 月後開票適用）；個別承運人可能另有內規（如 AS 改取營運航空公司）</span><span class="i18n-en">IATA Resolution 302 — Most Significant Carrier (MSC): in the order “crossing Areas → crossing sub-areas → first international sector within a sub-area”, the marketing carrier of that sector is taken (tickets issued from April 2015); individual carriers may have house rules (e.g. AS uses the operating carrier)</span></li>
       <li><span class="i18n-zh">加拿大 CTA 之對應規則與美國 DOT 類似，起訖涉加拿大時比照辦理，細節見 <a href="https://otc-cta.gc.ca/eng/publication/interline-baggage-rules-canada-interpretation-note" target="_blank" rel="noopener">CTA 說明</a></span><span class="i18n-en">The Canadian CTA rule is similar to the US DOT rule and is applied in the same way when the origin or destination is in Canada; see the <a href="https://otc-cta.gc.ca/eng/publication/interline-baggage-rules-canada-interpretation-note" target="_blank" rel="noopener">CTA note</a></span></li>
@@ -842,7 +843,7 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
   // worked scenarios line by line.
   var rules = [
     {code:"AS", allocUS:"msc-op", feeUS:"msc-op", allocIntl:"msc-op", feeIntl:"msc-op",
-      note:L("Alaska：FBA 與 EB Charge 均採 MSC-OC（判定航段取營運航空公司，非售票航空公司）。文件範例：DFW–(AS)–SFO–(AS*/JX)–TPE → FBA=JX、EB=JX；DFW–(JX*/AS)–SFO–(JX)–TPE → FBA=JX、EB=JX。文件僅列美加行程範例，未涉美加情境依同一邏輯套用，未見專門範例。", "Alaska: both FBA and EB charge follow MSC-OC (the operating carrier of the qualifying sector, not the marketing carrier). Document examples: DFW–(AS)–SFO–(AS*/JX)–TPE → FBA=JX, EB=JX; DFW–(JX*/AS)–SFO–(JX)–TPE → FBA=JX, EB=JX. The document only lists US/Canada examples; the same logic is applied to non-US/Canada itineraries, for which no dedicated example exists."),
+      note:L("Alaska：行程含 JX／AS codeshare 航班（JX*／AS 營運或 AS*／JX 營運）時，依《JX-AS Codeshare Policies and Procedures Manual》行李政策一律適用 JX，優先於本列設定（涉美加且 FMC 為第三家航空公司時除外）。其餘（無 JX／AS codeshare 航班之一般 interline）FBA 與 EB Charge 均採 MSC-OC（判定航段取營運航空公司，非售票航空公司）。文件範例：DFW–(AS)–SFO–(AS*/JX)–TPE → FBA=JX、EB=JX；DFW–(JX*/AS)–SFO–(JX)–TPE → FBA=JX、EB=JX。文件僅列美加行程範例，未涉美加情境依同一邏輯套用，未見專門範例。", "Alaska: when the itinerary includes a JX/AS codeshare flight (JX* operated by AS, or AS* operated by JX), the JX-AS Codeshare Policies and Procedures Manual applies and the baggage policy always follows JX, taking precedence over this row (except US/Canada itineraries whose FMC is a third carrier). Otherwise (plain interline with no JX/AS codeshare flight) both FBA and EB charge follow MSC-OC (the operating carrier of the qualifying sector, not the marketing carrier). Document examples: DFW–(AS)–SFO–(AS*/JX)–TPE → FBA=JX, EB=JX; DFW–(JX*/AS)–SFO–(JX)–TPE → FBA=JX, EB=JX. The document only lists US/Canada examples; the same logic is applied to non-US/Canada itineraries, for which no dedicated example exists."),
       confirmed:true},
     {code:"AA", allocUS:"fmc", feeUS:"fmc", allocIntl:"msc-mkt", feeIntl:"msc-mkt",
       note:L("American：涉美加行程 FBA／EB Charge 均採 FMC-MC。文件範例：JFK–(AA)–LAX–(AA*/JX)–TPE → FBA=AA、EB=AA；JFK–(JX*/AA)–LAX–(JX)–TPE → FBA=JX、EB=JX。未涉美加情境文件未提供範例，暫套用 IATA 標準 MSC 基準，未經驗證。適用範圍備註（文件原文）：“Taiwan and other Asian countries are included within the scope of the listed countries for Trans-Pacific (except Australia and New Zealand) routes.”（即台灣及其他亞洲國家均納入 Trans-Pacific 適用範圍，不含澳、紐）。", "American: for US/Canada itineraries both FBA and EB charge follow FMC-MC. Document examples: JFK–(AA)–LAX–(AA*/JX)–TPE → FBA=AA, EB=AA; JFK–(JX*/AA)–LAX–(JX)–TPE → FBA=JX, EB=JX. No example is provided for non-US/Canada itineraries; the IATA standard MSC basis is applied provisionally and is unverified. Scope note (original wording): “Taiwan and other Asian countries are included within the scope of the listed countries for Trans-Pacific (except Australia and New Zealand) routes.”"),
@@ -1266,6 +1267,30 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
       // Verified against the document's worked examples: e.g. EY scenario
       // "TPE-(JX*/EY)-AUH-(JX*/EY)-PRG" has FMC=JX but is still governed by
       // EY's row, because EY operates those segments.
+      // JX–AS Codeshare 協議例外（《JX-AS Codeshare Policies and Procedures Manual》2024-08-19）：
+      // 行程含 JX／AS 互掛 codeshare 航班（JX*／AS 營運，或 AS*／JX 營運）時，行李政策一律適用 JX，
+      // 優先於 AS 一般 interline 之 MSC-OC 內規。涉美加時行李政策須全票一致，故以整張票檢查；
+      // 未涉美加則依停留分段各自檢查。若涉美加且 FMC 為 JX／AS 以外的第三家，該協議不拘束第三方，仍依 FMC 規則。
+      var asScope = touchesUS ? fmcSegs : csegs;
+      var asCsIdx = -1;
+      for(var ai=0; ai<asScope.length; ai++){
+        var as_ = asScope[ai];
+        if((as_.mkt==="JX" && as_.op==="AS") || (as_.mkt==="AS" && as_.op==="JX")){ asCsIdx = ai; break; }
+      }
+      var asThirdFMC = touchesUS && fmc.carrier!=="JX" && fmc.carrier!=="AS";
+      var asOverride = asCsIdx>=0 && !asThirdFMC;
+      if(asCsIdx>=0 && asThirdFMC){
+        traceItems.push({label:L("JX／AS codeshare 例外不適用", "JX/AS codeshare exception not applied"), html:
+          L("行程含 JX／AS codeshare 航班 ", "The itinerary includes the JX/AS codeshare flight ")+fmt(asScope[asCsIdx],asCsIdx)+L("，但行程涉美加且 FMC 為 <b>", ", but it involves the US/Canada and the FMC is <b>")+esc(fmc.carrier)+L("</b>（非 JX／AS），JX–AS 協議不拘束第三方，仍依 FMC 規則判定。", "</b> (neither JX nor AS). The JX–AS agreement does not bind a third carrier, so the FMC rule still governs.")});
+      }
+      if(asOverride){
+        traceItems.push({label:L("JX／AS codeshare 例外：一律適用 JX", "JX/AS codeshare exception: JX always applies"), html:
+          (touchesUS ? L("整張票", "The ticket") : L("本段行程", "This journey"))+L("含 JX／AS codeshare 航班 ", " includes the JX/AS codeshare flight ")+fmt(asScope[asCsIdx],asCsIdx)+
+          L("。依《JX-AS Codeshare Policies and Procedures Manual》，JX 與 AS 之 codeshare 航班行李政策一律適用 <b>JX</b>，優先於 AS 之 MSC-OC 內規，不再查例外規則表。", ". Under the JX-AS Codeshare Policies and Procedures Manual, the baggage policy for JX/AS codeshare flights always follows <b>JX</b>; this takes precedence over the AS MSC-OC house rule and the rule table is not consulted.")});
+        var asFrag = L("含 JX／AS codeshare 航班，依 JX–AS Codeshare 協議一律適用 JX 行李政策", "JX/AS codeshare flight included — JX baggage policy always applies under the JX–AS codeshare agreement");
+        allocOut = {carrier:"JX", note:asFrag, confirmed:true};
+        feeOut = {carrier:"JX", note:asFrag, confirmed:true};
+      } else {
       var partner = null, partnerCode = null;
       // 涉美加：DOT 14 CFR 399.87 與加拿大 CTA 都是「整張票第一售票航空公司（FMC）的政策全程適用」，
       // 因此規則表取 FMC 該公司那一列，不因某一段出現其他夥伴而改用夥伴規則。
@@ -1327,6 +1352,7 @@ table.seg th{white-space:normal;vertical-align:bottom;line-height:1.3;}
       var f = resolveByMode(feeMode, fmc, mscMktResult, mscOpResult, focResult, hasCodeshare);
       allocOut = {carrier:a.carrier, note:a.basisFrag, confirmed:confirmed};
       feeOut = {carrier:f.carrier, note:f.basisFrag, confirmed:confirmed};
+      } // end: 非 JX／AS codeshare 例外
     } else {
       traceItems.push({label:L("等待輸入", "Waiting for input"), html:L("請於步驟 1 貼上行程文字，或點「＋ 新增航段」手動輸入。", "Paste the itinerary text in step 1, or click “+ Add segment” to enter it manually.")});
     }
